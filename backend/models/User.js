@@ -14,6 +14,8 @@ const UserSchema = new mongoose.Schema({
     role:              { type: String, enum: ['Player', 'GM', 'Both'] },
     groupType:         { type: String }, // e.g., "Friends", "Online-only", etc.
     playPreferences:   [{ type: String }], // e.g., ["Combat", "Roleplay", "Puzzles"]
+    onboardingComplete: { type: Boolean, default: false }
+
   });
 
 // Hash password before saving

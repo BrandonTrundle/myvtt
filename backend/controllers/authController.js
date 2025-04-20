@@ -14,9 +14,17 @@ exports.signup = async (req, res) => {
 
   try {
     const userExists = await User.findOne({ email });
-    if (userExists) return res.status(400).json({ message: 'Email already in use' });
+    if (userExists) {
+      return res.status(400).json({ message: 'Email already in use' });
+    }
 
-    const user = await User.create({ firstName, lastName, email, password });
+    const user = await User.create({
+      firstName,
+      lastName,
+      email,
+      password,
+      onboardingComplete: false, // set false initially
+    });
 
     res.status(201).json({
       message: 'User created successfully',
@@ -38,10 +46,14 @@ exports.login = async (req, res) => {
 
   try {
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: 'Invalid email or password' });
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
 
     const isMatch = await user.matchPassword(password);
-    if (!isMatch) return res.status(400).json({ message: 'Invalid email or password' });
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
 
     res.status(200).json({
       message: 'Login successful',
@@ -49,7 +61,8 @@ exports.login = async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
-        name: `${user.firstName} ${user.lastName}`
+        name: `${user.firstName} ${user.lastName}`,
+        onboardingComplete: user.onboardingComplete
       }
     });
   } catch (err) {
@@ -57,41 +70,42 @@ exports.login = async (req, res) => {
   }
 };
 
+// PATCH /api/auth/onboarding
 exports.completeOnboarding = async (req, res) => {
-    const userId = req.user._id;
-    const {
-      displayName,
-      language,
-      experienceLevel,
-      role,
-      groupType,
-      playPreferences,
-    } = req.body;
-  
-    try {
-      const user = await User.findByIdAndUpdate(
-        userId,
-        {
-          displayName,
-          language,
-          experienceLevel,
-          role,
-          groupType,
-          playPreferences,
-        },
-        { new: true }
-      );
-  
-      res.status(200).json({
-        message: 'Onboarding completed',
-        user: {
-          id: user._id,
-          email: user.email,
-          displayName: user.displayName,
-        },
-      });
-    } catch (err) {
-      res.status(500).json({ message: 'Failed to complete onboarding', error: err.message });
-    }
-  };
-  
+  const userId = req.user._id;
+  const {
+    displayName,
+    language,
+    experienceLevel,
+    role,
+    groupType,
+    playPreferences
+  } = req.body;
+
+  try {
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        displayName,
+        language,
+        experienceLevel,
+        role,
+        groupType,
+        playPreferences,
+        onboardingComplete: true
+      },
+      { new: true }
+    );
+
+    res.status(200).json({
+      message: 'Onboarding completed',
+      user: {
+        id: user._id,
+        email: user.email,
+        displayName: user.displayName
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to complete onboarding', error: err.message });
+  }
+};

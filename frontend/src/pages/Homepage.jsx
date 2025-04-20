@@ -1,4 +1,6 @@
 import React from 'react';
+import { Link } from 'react-router-dom'; // add this at the top
+
 
 const Homepage = () => {
   return (
@@ -8,9 +10,11 @@ const Homepage = () => {
       <section className="bg-parchment py-20 text-center">
         <h1 className="text-5xl font-extrabold mb-4">Your Virtual Tabletop Adventure Starts Here</h1>
         <p className="text-xl mb-8">Create. Collaborate. Conquer. All in your browser.</p>
-        <button className="bg-arcanared text-white px-8 py-3 rounded-lg hover:bg-arcanabrown transition">
-          Get Started Free
-        </button>
+        <Link to="/signup">
+          <button className="bg-arcanared text-white px-8 py-3 rounded-lg hover:bg-arcanabrown transition">
+            Get Started Free
+          </button>
+        </Link>
       </section>
 
       {/* Features */}
@@ -55,9 +59,11 @@ const Homepage = () => {
       <section className="bg-arcanared text-white py-16 text-center px-4">
         <h2 className="text-3xl font-bold mb-4">Ready to start your journey?</h2>
         <p className="mb-6">Sign up now and bring your next session to life.</p>
-        <button className="bg-white text-arcanared font-semibold px-6 py-3 rounded-lg hover:bg-yellow-100 transition">
-          Create Free Account
-        </button>
+        <Link to="/signup">
+          <button className="bg-white text-arcanared font-semibold px-6 py-3 rounded-lg hover:bg-yellow-100 transition">
+            Create Free Account
+          </button>
+        </Link>
       </section>
 
       {/* Footer */}

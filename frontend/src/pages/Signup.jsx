@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { decodeToken } from '../utils/decodeToken';
+
 
 const Signup = () => {
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
@@ -8,7 +13,7 @@ const Signup = () => {
     password: '',
     confirmPassword: '',
     newsletter: false,
-    terms: false
+    terms: false,
   });
 
   const [message, setMessage] = useState('');
@@ -17,7 +22,7 @@ const Signup = () => {
     const { name, value, type, checked } = e.target;
     setForm({
       ...form,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === 'checkbox' ? checked : value,
     });
   };
 
@@ -52,9 +57,14 @@ const Signup = () => {
         setMessage(data.message || 'Signup failed');
       } else {
         localStorage.setItem('token', data.token);
-        setMessage('Signup successful!');
-        console.log('User:', data.user);
-        // Optionally navigate to onboarding: navigate('/welcome');
+        const decoded = decodeToken(data.token);
+        const onboardingComplete = decoded?.onboardingComplete;
+      
+        if (onboardingComplete) {
+          navigate('/dashboard'); // or your main area after login
+        } else {
+          navigate('/welcome');
+        }
       }
     } catch (err) {
       console.error(err);
@@ -65,11 +75,9 @@ const Signup = () => {
   return (
     <div className="bg-parchment min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 bg-white p-8 shadow-lg rounded-lg border border-arcanabrown">
-        <div>
-          <h2 className="text-center text-3xl font-extrabold text-arcanadeep">
-            Create your ArcanaTable account
-          </h2>
-        </div>
+        <h2 className="text-center text-3xl font-extrabold text-arcanadeep">
+          Create your ArcanaTable account
+        </h2>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div className="grid grid-cols-2 gap-4">
