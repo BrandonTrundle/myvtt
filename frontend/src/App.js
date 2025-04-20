@@ -1,10 +1,18 @@
 import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Homepage from './components/Homepage';
+import Signup from './components/Signup';
 
 function App() {
   return (
-    <div className="p-10 text-3xl text-blue-600 font-bold">
-      Tailwind is working! 🎨
-    </div>
+    <>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Homepage />} />
+        <Route path="/signup" element={<Signup />} />
+      </Routes>
+    </>
   );
 }
 

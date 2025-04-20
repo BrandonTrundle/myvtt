@@ -38,3 +38,6 @@ yarn.lock
 # System-specific files
 *.swp
 *.swo
+
+# Planning files
+/Planning/
