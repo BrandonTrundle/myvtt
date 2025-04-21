@@ -9,6 +9,9 @@ import Landing from './pages/Landing';
 import ProtectedRoute from './components/ProtectedRoute';
 import UserWelcome from './pages/UserWelcome';
 import CharacterDashboard from './pages/CharacterDashboard';
+import CreateCampaign from './pages/CreateCampaign';
+import CampaignList from './pages/CampaignList';
+import Messages from './pages/Messages'; 
 
 function App() {
   return (
@@ -37,6 +40,33 @@ function App() {
           element={
             <ProtectedRoute>
               <CharacterDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/create-campaign"
+          element={
+            <ProtectedRoute>
+              <CreateCampaign />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/campaigns"
+          element={
+            <ProtectedRoute>
+              <CampaignList />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/messages"
+          element={
+            <ProtectedRoute>
+              <Messages />
             </ProtectedRoute>
           }
         />

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import UserInfoCard from '../components/UserInfoCard';
-import { apiFetch } from '../utils/api'; // ✅ import apiFetch
+import { apiFetch } from '../utils/api';
 
 const UserWelcome = () => {
   const [user, setUser] = useState({});
+  const [campaigns, setCampaigns] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -12,23 +13,27 @@ const UserWelcome = () => {
       try {
         const res = await apiFetch('/api/auth/me');
         const data = await res.json();
-        console.log('👤 User from /api/auth/me:', data);
-
-        if (res.ok) {
-          setUser(data);
-        } else {
-          console.error('Failed to load user:', data.message);
-        }
+        if (res.ok) setUser(data);
       } catch (err) {
         console.error('❌ Failed to fetch user', err);
       }
     };
 
+    const fetchCampaigns = async () => {
+      try {
+        const res = await apiFetch('/api/campaigns/mine');
+        const data = await res.json();
+        if (res.ok) setCampaigns(data);
+      } catch (err) {
+        console.error('❌ Error fetching campaigns:', err);
+      }
+    };
+
     fetchUser();
+    fetchCampaigns();
 
     // Track play session
     const sessionStart = Date.now();
-
     const updatePlayTime = async () => {
       const sessionEnd = Date.now();
       const minutes = Math.floor((sessionEnd - sessionStart) / 60000);
@@ -39,7 +44,6 @@ const UserWelcome = () => {
           method: 'PATCH',
           body: JSON.stringify({ minutes }),
         });
-        console.log(`⏱️ Logged ${minutes} minutes`);
       } catch (err) {
         console.error('❌ Failed to update play time', err);
       }
@@ -68,11 +72,26 @@ const UserWelcome = () => {
       <p className="mb-8 text-lg">Let’s get you set up and ready to play.</p>
 
       <div className="grid gap-6 max-w-3xl">
-        <div className="bg-white p-6 rounded shadow border border-arcanabrown hover:shadow-lg transition">
-          <h2 className="text-xl font-bold">⚔️ Create your first adventure</h2>
-          <p className="mt-2">Start building your campaign map and invite your party.</p>
-        </div>
+        {/* Campaigns box (dynamic based on campaign count) */}
+        {campaigns.length === 0 ? (
+          <div
+            onClick={() => navigate('/create-campaign')}
+            className="bg-white p-6 rounded shadow border border-arcanabrown hover:shadow-lg transition cursor-pointer"
+          >
+            <h2 className="text-xl font-bold">⚔️ Create your first adventure</h2>
+            <p className="mt-2">Start building your campaign map and invite your party.</p>
+          </div>
+        ) : (
+          <div
+            onClick={() => navigate('/campaigns')}
+            className="bg-white p-6 rounded shadow border border-arcanabrown hover:shadow-lg transition cursor-pointer"
+          >
+            <h2 className="text-xl font-bold">🎲 View your campaigns</h2>
+            <p className="mt-2">Manage your active adventures and groups.</p>
+          </div>
+        )}
 
+        {/* Character builder */}
         <div
           onClick={() => navigate('/characters')}
           className="bg-white p-6 rounded shadow border border-arcanabrown hover:shadow-lg transition cursor-pointer"
@@ -81,6 +100,7 @@ const UserWelcome = () => {
           <p className="mt-2">Use our character builder to make your hero shine in your story.</p>
         </div>
 
+        {/* Learning resources */}
         <div className="bg-white p-6 rounded shadow border border-arcanabrown hover:shadow-lg transition">
           <h2 className="text-xl font-bold">📖 Learn ArcanaTable</h2>
           <p className="mt-2">Explore tutorials on using tokens, fog of war, and map creation.</p>

@@ -1,15 +1,16 @@
 import React, { useRef, useState, useEffect, useContext } from 'react';
 import { Bell, Mail } from 'lucide-react';
 import { UserContext } from '../context/UserContext';
-import { apiFetch } from '../utils/api'; // adjust path as needed
+import { useNavigate } from 'react-router-dom';
+import { apiFetch } from '../utils/api';
 import { API_BASE } from '../utils/api';
-
 
 const UserInfoCard = ({ user, memberSince, hoursPlayed }) => {
   const fileInputRef = useRef(null);
-  const [avatarUrl, setAvatarUrl] = useState('/defaultav.png');
+  const navigate = useNavigate();
   const { fetchUser } = useContext(UserContext);
 
+  const [avatarUrl, setAvatarUrl] = useState('/defaultav.png');
   const [hasNewNotifications, setHasNewNotifications] = useState(true);
   const [hasNewMessages, setHasNewMessages] = useState(false);
 
@@ -18,6 +19,20 @@ const UserInfoCard = ({ user, memberSince, hoursPlayed }) => {
       setAvatarUrl(`${API_BASE}${user.avatarUrl}`);
     }
   }, [user]);
+
+  useEffect(() => {
+    const checkMessages = async () => {
+      try {
+        const res = await apiFetch('/api/messages/unread');
+        const data = await res.json();
+        setHasNewMessages(data.unread > 0);
+      } catch (err) {
+        console.error('❌ Failed to check unread messages', err);
+      }
+    };
+
+    checkMessages();
+  }, []);
 
   const handleAvatarClick = () => fileInputRef.current.click();
 
@@ -39,7 +54,7 @@ const UserInfoCard = ({ user, memberSince, hoursPlayed }) => {
       const data = await res.json();
       if (res.ok && data.avatarUrl) {
         setAvatarUrl(`${API_BASE}${data.avatarUrl}`);
-        await fetchUser(); // 🔄 Refresh global user context so navbar icon updates too
+        await fetchUser();
       } else {
         alert(data.message || 'Failed to upload avatar');
       }
@@ -61,13 +76,12 @@ const UserInfoCard = ({ user, memberSince, hoursPlayed }) => {
 
       <input
         type="file"
-        name="avatar" // ✅ Add this line
+        name="avatar"
         accept="image/*"
         ref={fileInputRef}
         style={{ display: 'none' }}
         onChange={handleFileChange}
       />
-
 
       {/* Info */}
       <div className="flex-1">
@@ -83,7 +97,7 @@ const UserInfoCard = ({ user, memberSince, hoursPlayed }) => {
           Manage Account
         </button>
 
-        {/* Icons below Manage Account */}
+        {/* Icons */}
         <div className="mt-3 flex gap-4">
           <div
             className="flex items-center gap-1 cursor-pointer"
@@ -98,9 +112,7 @@ const UserInfoCard = ({ user, memberSince, hoursPlayed }) => {
 
           <div
             className="flex items-center gap-1 cursor-pointer"
-            onClick={() => {
-              alert('Messaging coming soon!');
-            }}
+            onClick={() => navigate('/messages')}
           >
             <Mail className={`w-5 h-5 ${hasNewMessages ? 'text-yellow-500' : 'text-gray-400'}`} />
             <span className="text-sm">Messages</span>
