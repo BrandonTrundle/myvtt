@@ -5,22 +5,24 @@ import CampaignCard from '../components/CampaignCard';
 const CampaignList = () => {
   const [campaigns, setCampaigns] = useState([]);
   const [copiedCode, setCopiedCode] = useState(null);
+  const [joinCode, setJoinCode] = useState('');
+  const [joinLoading, setJoinLoading] = useState(false);
+
+  const fetchCampaigns = async () => {
+    try {
+      const res = await apiFetch('/api/campaigns/mine');
+      const data = await res.json();
+      if (res.ok) {
+        setCampaigns(data);
+      } else {
+        console.error('Failed to fetch campaigns:', data.message);
+      }
+    } catch (err) {
+      console.error('❌ Fetch error:', err);
+    }
+  };
 
   useEffect(() => {
-    const fetchCampaigns = async () => {
-      try {
-        const res = await apiFetch('/api/campaigns/mine');
-        const data = await res.json();
-        if (res.ok) {
-          setCampaigns(data);
-        } else {
-          console.error('Failed to fetch campaigns:', data.message);
-        }
-      } catch (err) {
-        console.error('❌ Fetch error:', err);
-      }
-    };
-
     fetchCampaigns();
   }, []);
 
@@ -47,14 +49,61 @@ const CampaignList = () => {
   };
 
   const handleSendInvite = (campaign) => {
-    alert(`TODO: Show message form to invite player to "${campaign.title}" with code ${campaign.inviteCode}`);
-    // You can plug in a modal or inline form here later
+    alert(`TODO: Custom invite modal — already functional inline.`);
+  };
+
+  const handleJoin = async () => {
+    if (!joinCode.trim()) return;
+
+    setJoinLoading(true);
+    try {
+      const res = await apiFetch(`/api/campaigns/join/${joinCode.trim()}`, {
+        method: 'POST',
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert('🎉 Successfully joined the campaign!');
+        setJoinCode('');
+        fetchCampaigns(); // Refresh list
+      } else {
+        alert(data.message || 'Failed to join.');
+      }
+    } catch (err) {
+      console.error('❌ Error joining campaign:', err);
+      alert('Something went wrong.');
+    } finally {
+      setJoinLoading(false);
+    }
   };
 
   return (
     <div className="bg-parchment min-h-screen p-8 text-arcanadeep">
       <h1 className="text-3xl font-bold mb-6">🎲 My Campaigns</h1>
 
+      {/* Join Campaign Box */}
+      <div className="mb-6 max-w-md bg-white p-4 rounded shadow border border-arcanabrown">
+        <h2 className="text-lg font-semibold mb-2">Join a Campaign</h2>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            placeholder="Enter invite code..."
+            value={joinCode}
+            onChange={(e) => setJoinCode(e.target.value)}
+            className="flex-1 border px-3 py-2 rounded text-sm"
+          />
+          <button
+            onClick={handleJoin}
+            disabled={joinLoading}
+            className="bg-arcanared text-white px-4 py-2 text-sm rounded hover:bg-arcanabrown transition"
+          >
+            {joinLoading ? 'Joining...' : 'Join'}
+          </button>
+        </div>
+      </div>
+
+      {/* Campaign Grid */}
       {campaigns.length === 0 ? (
         <p>No campaigns yet.</p>
       ) : (

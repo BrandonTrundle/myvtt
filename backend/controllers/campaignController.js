@@ -64,11 +64,14 @@ const getMyCampaigns = async (req, res) => {
 
     const campaigns = await Campaign.find({
       $or: [{ gm: userId }, { players: userId }],
-    }).lean();
+    })
+      .populate('gm', 'displayName avatarUrl')
+      .populate('players', 'displayName avatarUrl')
+      .lean();
 
     const tagged = campaigns.map((campaign) => ({
       ...campaign,
-      isGM: campaign.gm.toString() === userId.toString(),
+      isGM: campaign.gm._id.toString() === userId.toString(),
     }));
 
     res.json(tagged);
