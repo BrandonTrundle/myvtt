@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { decodeToken } from '../utils/decodeToken';
+import { jwtDecode } from 'jwt-decode';
+
 
 
 const Signup = () => {
@@ -57,11 +59,12 @@ const Signup = () => {
         setMessage(data.message || 'Signup failed');
       } else {
         localStorage.setItem('token', data.token);
-        const decoded = decodeToken(data.token);
-        const onboardingComplete = decoded?.onboardingComplete;
-      
-        if (onboardingComplete) {
-          navigate('/dashboard'); // or your main area after login
+        const decoded = jwtDecode(data.token); // ← Fix here
+
+        
+        // Navigate based on onboarding state
+        if (decoded.onboardingComplete) {
+          navigate('/user-welcome');
         } else {
           navigate('/welcome');
         }

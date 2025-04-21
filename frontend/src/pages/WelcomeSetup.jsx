@@ -23,7 +23,7 @@ const WelcomeSetup = () => {
         });
         const data = await res.json();
         if (data.onboardingComplete) {
-          navigate('/dashboard');
+          navigate('/user-welcome');
         }
       } catch (err) {
         console.error('Error checking onboarding status', err);
@@ -60,7 +60,7 @@ const WelcomeSetup = () => {
       });
       const data = await res.json();
       if (res.ok) {
-        navigate('/dashboard');
+        navigate('/user-welcome');
       } else {
         alert(data.message || 'Something went wrong.');
       }

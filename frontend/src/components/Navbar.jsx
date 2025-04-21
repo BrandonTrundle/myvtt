@@ -1,10 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bell } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef();
+  const navigate = useNavigate();
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -17,9 +22,41 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    try {
+      const res = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || 'Login failed');
+        return;
+      }
+
+      localStorage.setItem('token', data.token);
+
+      // Redirect based on onboarding status
+      if (data.user && data.user.onboardingComplete) {
+        navigate('/user-welcome');
+      } else {
+        navigate('/welcome');
+      }
+
+      setMenuOpen(false);
+    } catch (err) {
+      console.error(err);
+      setError('Server error during login');
+    }
+  };
+
   return (
     <nav className="bg-parchment border-b border-arcanabrown px-6 py-3 flex justify-between items-center shadow text-sm font-semibold text-arcanabrown">
-      
       {/* Left: Logo + Brand */}
       <div className="flex items-center gap-3">
         <img src="/arcana-logo.png" alt="ArcanaTable Logo" className="h-10 w-auto" />
@@ -49,8 +86,7 @@ const Navbar = () => {
         {/* Dropdown with Login Form */}
         {menuOpen && (
           <div className="absolute right-0 top-12 bg-white border border-arcanabrown shadow-md rounded-md w-72 p-4 z-50">
-            <form className="flex flex-col gap-4">
-              {/* Email */}
+            <form onSubmit={handleLogin} className="flex flex-col gap-4">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-arcanadeep">
                   Email address
@@ -58,12 +94,14 @@ const Navbar = () => {
                 <input
                   type="email"
                   id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="email@example.com"
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:border-arcanared"
+                  required
                 />
               </div>
 
-              {/* Password */}
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-arcanadeep">
                   Password
@@ -71,18 +109,22 @@ const Navbar = () => {
                 <input
                   type="password"
                   id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="Password"
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:border-arcanared"
+                  required
                 />
               </div>
 
-              {/* Sign In Button */}
               <button
                 type="submit"
                 className="bg-arcanared text-white py-2 rounded hover:bg-arcanabrown transition"
               >
                 Sign in
               </button>
+
+              {error && <p className="text-sm text-arcanared text-center">{error}</p>}
             </form>
 
             {/* Footer Links */}
