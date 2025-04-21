@@ -2,6 +2,8 @@ import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { UserContext } from '../context/UserContext';
+import { apiFetch } from '../utils/api'; // adjust path as needed
+
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -41,7 +43,7 @@ const Signup = () => {
     }
 
     try {
-      const res = await fetch('http://localhost:5000/api/auth/signup', {
+      const res = await apiFetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

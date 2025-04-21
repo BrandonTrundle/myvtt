@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import CharacterForm from '../components/CharacterForm';
+import { apiFetch } from '../utils/api'; // adjust path as needed
+
 
 const CharacterDashboard = () => {
   const [characters, setCharacters] = useState([]);
@@ -7,11 +9,7 @@ const CharacterDashboard = () => {
 
   const fetchCharacters = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/characters', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await apiFetch('/api/characters');
       const data = await res.json();
       if (res.ok) setCharacters(data);
       else console.error(data.message);
@@ -24,11 +22,8 @@ const CharacterDashboard = () => {
     if (!window.confirm('Delete this character?')) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/characters/${id}`, {
+      const res = await apiFetch(`/api/characters/${id}`, {
         method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
 
       if (res.ok) {

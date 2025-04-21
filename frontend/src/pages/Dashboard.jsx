@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { apiFetch } from '../utils/api'; // adjust path if needed
+
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -7,9 +9,8 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/user/me', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await apiFetch('/api/user/me');
+
 
         const data = await res.json();
         setUser(data);

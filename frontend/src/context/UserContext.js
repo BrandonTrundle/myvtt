@@ -1,4 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
+import { apiFetch } from '../utils/api'; // adjust path if needed
+
 
 export const UserContext = createContext();
 
@@ -8,12 +10,9 @@ export const UserProvider = ({ children }) => {
   const fetchUser = async () => {
     const token = localStorage.getItem('token');
     if (!token) return;
-
+  
     try {
-      const res = await fetch('http://localhost:5000/api/auth/me', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      const res = await apiFetch('/api/auth/me');
       const data = await res.json();
       if (res.ok) setUser(data);
     } catch (err) {

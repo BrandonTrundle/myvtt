@@ -39,7 +39,7 @@ const CharacterForm = () => {
     const token = localStorage.getItem('token');
 
     try {
-      const res = await fetch('http://localhost:5000/api/characters', {
+      const res = await fetch(`${process.env.REACT_APP_API_BASE}/api/characters`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

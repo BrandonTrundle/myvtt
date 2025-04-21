@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { apiFetch } from '../utils/api'; // ✅ import apiFetch
 
 const WelcomeSetup = () => {
   const [step, setStep] = useState(0);
@@ -13,14 +14,11 @@ const WelcomeSetup = () => {
   });
 
   const navigate = useNavigate();
-  const token = localStorage.getItem('token');
 
   useEffect(() => {
     const checkOnboarding = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/auth/me', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await apiFetch('/api/auth/me');
         const data = await res.json();
         if (data.onboardingComplete) {
           navigate('/user-welcome');
@@ -30,7 +28,7 @@ const WelcomeSetup = () => {
       }
     };
     checkOnboarding();
-  }, [token, navigate]);
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -50,12 +48,8 @@ const WelcomeSetup = () => {
 
   const handleSubmit = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/auth/onboarding', {
+      const res = await apiFetch('/api/auth/onboarding', {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify({ ...form, onboardingComplete: true }),
       });
       const data = await res.json();

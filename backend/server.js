@@ -12,23 +12,35 @@ connectDB();
 // Initialize app
 const app = express();
 
-// Middleware
+// Middleware: Allow all origins for local testing (safe inside your LAN)
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: (origin, callback) => {
+    if (!origin || origin.startsWith('http://192.168.') || origin === 'http://localhost:3000') {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
   credentials: true,
 }));
-app.use(express.json());
 
-// Serve uploaded files (e.g. avatar images)
+// ✅ Serve static files (e.g. avatar images)
 app.use('/uploads', express.static('uploads'));
 
-// Routes
-app.use('/api/auth', require('./routes/auth'));
+// ✅ File upload routes (no JSON/body parsing needed)
 app.use('/api/user', require('./routes/user'));
+
+// ✅ JSON and urlencoded body parsing for remaining routes
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// ✅ Other API routes
+app.use('/api/auth', require('./routes/auth'));
 app.use('/api/characters', require('./routes/character'));
 
-
-// Start server
+// ✅ Start server on all interfaces (for LAN access)
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
+});

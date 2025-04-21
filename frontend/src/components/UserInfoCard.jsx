@@ -1,6 +1,9 @@
 import React, { useRef, useState, useEffect, useContext } from 'react';
 import { Bell, Mail } from 'lucide-react';
 import { UserContext } from '../context/UserContext';
+import { apiFetch } from '../utils/api'; // adjust path as needed
+import { API_BASE } from '../utils/api';
+
 
 const UserInfoCard = ({ user, memberSince, hoursPlayed }) => {
   const fileInputRef = useRef(null);
@@ -12,7 +15,7 @@ const UserInfoCard = ({ user, memberSince, hoursPlayed }) => {
 
   useEffect(() => {
     if (user.avatarUrl) {
-      setAvatarUrl(`http://localhost:5000${user.avatarUrl}`);
+      setAvatarUrl(`${API_BASE}${user.avatarUrl}`);
     }
   }, [user]);
 
@@ -27,7 +30,7 @@ const UserInfoCard = ({ user, memberSince, hoursPlayed }) => {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/user/avatar', {
+      const res = await apiFetch('/api/user/avatar', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -35,7 +38,7 @@ const UserInfoCard = ({ user, memberSince, hoursPlayed }) => {
 
       const data = await res.json();
       if (res.ok && data.avatarUrl) {
-        setAvatarUrl(`http://localhost:5000${data.avatarUrl}`);
+        setAvatarUrl(`${API_BASE}${data.avatarUrl}`);
         await fetchUser(); // 🔄 Refresh global user context so navbar icon updates too
       } else {
         alert(data.message || 'Failed to upload avatar');
@@ -58,11 +61,13 @@ const UserInfoCard = ({ user, memberSince, hoursPlayed }) => {
 
       <input
         type="file"
+        name="avatar" // ✅ Add this line
         accept="image/*"
         ref={fileInputRef}
         style={{ display: 'none' }}
         onChange={handleFileChange}
       />
+
 
       {/* Info */}
       <div className="flex-1">

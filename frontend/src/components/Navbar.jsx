@@ -2,6 +2,9 @@ import React, { useState, useRef, useEffect, useContext } from 'react';
 import { Bell } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { UserContext } from '../context/UserContext';
+import { apiFetch } from '../utils/api'; // Adjust path if needed
+import { API_BASE } from '../utils/api';
+
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -29,7 +32,7 @@ const Navbar = () => {
     e.preventDefault();
 
     try {
-      const res = await fetch('http://localhost:5000/api/auth/login', {
+      const res = await apiFetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -93,7 +96,7 @@ const Navbar = () => {
         {user ? (
           <div className="flex items-center gap-2">
             <img
-              src={user.avatarUrl ? `http://localhost:5000${user.avatarUrl}` : '/defaultav.png'}
+              src={user.avatarUrl ? `${API_BASE}${user.avatarUrl}` : '/defaultav.png'}
               alt="User Avatar"
               className="w-8 h-8 rounded-full border object-cover"
             />

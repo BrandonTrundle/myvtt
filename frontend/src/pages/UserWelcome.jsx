@@ -1,20 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import UserInfoCard from '../components/UserInfoCard';
+import { apiFetch } from '../utils/api'; // ✅ import apiFetch
 
 const UserWelcome = () => {
   const [user, setUser] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-
     const fetchUser = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/auth/me', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
+        const res = await apiFetch('/api/auth/me');
         const data = await res.json();
         console.log('👤 User from /api/auth/me:', data);
 
@@ -39,12 +35,8 @@ const UserWelcome = () => {
       if (minutes <= 0) return;
 
       try {
-        await fetch('http://localhost:5000/api/user/hours-played', {
+        await apiFetch('/api/user/hours-played', {
           method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
           body: JSON.stringify({ minutes }),
         });
         console.log(`⏱️ Logged ${minutes} minutes`);
