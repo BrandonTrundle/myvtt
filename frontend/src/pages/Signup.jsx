@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { decodeToken } from '../utils/decodeToken';
 import { jwtDecode } from 'jwt-decode';
-
-
+import { UserContext } from '../context/UserContext';
 
 const Signup = () => {
   const navigate = useNavigate();
+  const { fetchUser } = useContext(UserContext);
 
   const [form, setForm] = useState({
     firstName: '',
@@ -59,10 +58,11 @@ const Signup = () => {
         setMessage(data.message || 'Signup failed');
       } else {
         localStorage.setItem('token', data.token);
-        const decoded = jwtDecode(data.token); // ← Fix here
 
-        
-        // Navigate based on onboarding state
+        // Update user context
+        await fetchUser();
+
+        const decoded = jwtDecode(data.token);
         if (decoded.onboardingComplete) {
           navigate('/user-welcome');
         } else {

@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import UserInfoCard from '../components/UserInfoCard';
 
 const UserWelcome = () => {
   const [user, setUser] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -60,7 +62,6 @@ const UserWelcome = () => {
 
   return (
     <div className="bg-parchment min-h-screen text-arcanadeep px-6 py-10 relative">
-
       {/* Top-right user info card */}
       <div className="absolute top-10 right-10">
         <UserInfoCard
@@ -80,7 +81,10 @@ const UserWelcome = () => {
           <p className="mt-2">Start building your campaign map and invite your party.</p>
         </div>
 
-        <div className="bg-white p-6 rounded shadow border border-arcanabrown hover:shadow-lg transition">
+        <div
+          onClick={() => navigate('/characters')}
+          className="bg-white p-6 rounded shadow border border-arcanabrown hover:shadow-lg transition cursor-pointer"
+        >
           <h2 className="text-xl font-bold">🧙 Create your character</h2>
           <p className="mt-2">Use our character builder to make your hero shine in your story.</p>
         </div>

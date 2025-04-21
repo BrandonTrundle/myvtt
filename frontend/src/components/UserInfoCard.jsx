@@ -1,11 +1,12 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { Bell, Mail } from 'lucide-react'; // 👈 Make sure you have lucide-react installed
+import React, { useRef, useState, useEffect, useContext } from 'react';
+import { Bell, Mail } from 'lucide-react';
+import { UserContext } from '../context/UserContext';
 
 const UserInfoCard = ({ user, memberSince, hoursPlayed }) => {
   const fileInputRef = useRef(null);
   const [avatarUrl, setAvatarUrl] = useState('/defaultav.png');
+  const { fetchUser } = useContext(UserContext);
 
-  // Temporary states — will be dynamic later
   const [hasNewNotifications, setHasNewNotifications] = useState(true);
   const [hasNewMessages, setHasNewMessages] = useState(false);
 
@@ -35,6 +36,7 @@ const UserInfoCard = ({ user, memberSince, hoursPlayed }) => {
       const data = await res.json();
       if (res.ok && data.avatarUrl) {
         setAvatarUrl(`http://localhost:5000${data.avatarUrl}`);
+        await fetchUser(); // 🔄 Refresh global user context so navbar icon updates too
       } else {
         alert(data.message || 'Failed to upload avatar');
       }
@@ -63,39 +65,43 @@ const UserInfoCard = ({ user, memberSince, hoursPlayed }) => {
       />
 
       {/* Info */}
-{/* Info */}
-<div className="flex-1">
-  <h3 className="font-bold text-lg">{user.displayName || 'Adventurer'}</h3>
-  <p className="text-sm text-gray-700">Tier: {user.subscriptionTier || 'Free'}</p>
-  <p className="text-sm text-gray-700">
-    Member since:{' '}
-    {memberSince ? new Date(memberSince).toLocaleDateString() : 'N/A'}
-  </p>
-  <p className="text-sm text-gray-700">Hours Played: {hoursPlayed}</p>
-  
-  <button className="mt-2 text-arcanared underline text-sm hover:text-arcanabrown">
-    Manage Account
-  </button>
+      <div className="flex-1">
+        <h3 className="font-bold text-lg">{user.displayName || 'Adventurer'}</h3>
+        <p className="text-sm text-gray-700">Tier: {user.subscriptionTier || 'Free'}</p>
+        <p className="text-sm text-gray-700">
+          Member since:{' '}
+          {memberSince ? new Date(memberSince).toLocaleDateString() : 'N/A'}
+        </p>
+        <p className="text-sm text-gray-700">Hours Played: {hoursPlayed}</p>
 
-  {/* Icons below Manage Account */}
-  <div className="mt-3 flex gap-4">
-    <div className="flex items-center gap-1 cursor-pointer" onClick={() => {
-      alert('Notifications panel coming soon!');
-      setHasNewNotifications(false);
-    }}>
-      <Bell className={`w-5 h-5 ${hasNewNotifications ? 'text-yellow-500' : 'text-gray-400'}`} />
-      <span className="text-sm">Notifications</span>
-    </div>
+        <button className="mt-2 text-arcanared underline text-sm hover:text-arcanabrown">
+          Manage Account
+        </button>
 
-    <div className="flex items-center gap-1 cursor-pointer" onClick={() => {
-      alert('Messaging coming soon!');
-    }}>
-      <Mail className={`w-5 h-5 ${hasNewMessages ? 'text-yellow-500' : 'text-gray-400'}`} />
-      <span className="text-sm">Messages</span>
-    </div>
-  </div>
-</div>
+        {/* Icons below Manage Account */}
+        <div className="mt-3 flex gap-4">
+          <div
+            className="flex items-center gap-1 cursor-pointer"
+            onClick={() => {
+              alert('Notifications panel coming soon!');
+              setHasNewNotifications(false);
+            }}
+          >
+            <Bell className={`w-5 h-5 ${hasNewNotifications ? 'text-yellow-500' : 'text-gray-400'}`} />
+            <span className="text-sm">Notifications</span>
+          </div>
 
+          <div
+            className="flex items-center gap-1 cursor-pointer"
+            onClick={() => {
+              alert('Messaging coming soon!');
+            }}
+          >
+            <Mail className={`w-5 h-5 ${hasNewMessages ? 'text-yellow-500' : 'text-gray-400'}`} />
+            <span className="text-sm">Messages</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

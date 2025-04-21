@@ -6,9 +6,9 @@ import Signup from './pages/Signup';
 import WelcomeSetup from './pages/WelcomeSetup';
 import Dashboard from './pages/Dashboard';
 import Landing from './pages/Landing';
-import ProtectedRoute from './components/ProtectedRoute'; // ✅ Add this line
+import ProtectedRoute from './components/ProtectedRoute';
 import UserWelcome from './pages/UserWelcome';
-
+import CharacterDashboard from './pages/CharacterDashboard';
 
 function App() {
   return (
@@ -22,14 +22,21 @@ function App() {
         <Route path="/landing" element={<Landing />} />
         <Route path="/user-welcome" element={<UserWelcome />} />
 
-
-        {/* Protected Route */}
+        {/* Protected Routes */}
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
               <Dashboard />
-              <UserWelcome />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/characters"
+          element={
+            <ProtectedRoute>
+              <CharacterDashboard />
             </ProtectedRoute>
           }
         />

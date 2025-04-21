@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
 import { Bell } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { UserContext } from '../context/UserContext';
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -10,6 +11,8 @@ const Navbar = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+
+  const { user, setUser, fetchUser } = useContext(UserContext);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -41,18 +44,28 @@ const Navbar = () => {
 
       localStorage.setItem('token', data.token);
 
+      // Set user in context
+      await fetchUser();
+
       // Redirect based on onboarding status
-      if (data.user && data.user.onboardingComplete) {
+      if (data.user?.onboardingComplete) {
         navigate('/user-welcome');
       } else {
         navigate('/welcome');
       }
 
       setMenuOpen(false);
+      setError('');
     } catch (err) {
       console.error(err);
       setError('Server error during login');
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setUser(null);
+    navigate('/');
   };
 
   return (
@@ -73,79 +86,97 @@ const Navbar = () => {
         <a href="#" className="hover:text-arcanabrown">Subscribe</a>
       </div>
 
-      {/* Right: Notification + Sign In */}
+      {/* Right: Auth area */}
       <div className="flex items-center gap-3 text-arcanadeep relative" ref={menuRef}>
         <Bell className="w-5 h-5" />
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="hover:text-arcanared"
-        >
-          Sign In ▾
-        </button>
 
-        {/* Dropdown with Login Form */}
-        {menuOpen && (
-          <div className="absolute right-0 top-12 bg-white border border-arcanabrown shadow-md rounded-md w-72 p-4 z-50">
-            <form onSubmit={handleLogin} className="flex flex-col gap-4">
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-arcanadeep">
-                  Email address
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="email@example.com"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:border-arcanared"
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-arcanadeep">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Password"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:border-arcanared"
-                  required
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="bg-arcanared text-white py-2 rounded hover:bg-arcanabrown transition"
-              >
-                Sign in
-              </button>
-
-              {error && <p className="text-sm text-arcanared text-center">{error}</p>}
-            </form>
-
-            {/* Footer Links */}
-            <div className="text-sm mt-4 text-center">
-              <Link
-                to="/signup"
-                onClick={() => setMenuOpen(false)}
-                className="text-arcanadeep hover:underline"
-              >
-                New to ArcanaTable? <span className="text-arcanared">Sign up</span>
-              </Link>
-              <br />
-              <button
-                type="button"
-                onClick={() => alert('Forgot password coming soon!')}
-                className="text-arcanadeep hover:underline mt-1 inline-block"
-              >
-                Forgot password?
-              </button>
-            </div>
+        {user ? (
+          <div className="flex items-center gap-2">
+            <img
+              src={user.avatarUrl ? `http://localhost:5000${user.avatarUrl}` : '/defaultav.png'}
+              alt="User Avatar"
+              className="w-8 h-8 rounded-full border object-cover"
+            />
+            <button
+              onClick={handleLogout}
+              className="hover:text-arcanared"
+            >
+              Sign Out
+            </button>
           </div>
+        ) : (
+          <>
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="hover:text-arcanared"
+            >
+              Sign In ▾
+            </button>
+
+            {menuOpen && (
+              <div className="absolute right-0 top-12 bg-white border border-arcanabrown shadow-md rounded-md w-72 p-4 z-50">
+                <form onSubmit={handleLogin} className="flex flex-col gap-4">
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-arcanadeep">
+                      Email address
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="email@example.com"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:border-arcanared"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="password" className="block text-sm font-medium text-arcanadeep">
+                      Password
+                    </label>
+                    <input
+                      type="password"
+                      id="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Password"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:border-arcanared"
+                      required
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="bg-arcanared text-white py-2 rounded hover:bg-arcanabrown transition"
+                  >
+                    Sign in
+                  </button>
+
+                  {error && <p className="text-sm text-arcanared text-center">{error}</p>}
+                </form>
+
+                {/* Footer Links */}
+                <div className="text-sm mt-4 text-center">
+                  <Link
+                    to="/signup"
+                    onClick={() => setMenuOpen(false)}
+                    className="text-arcanadeep hover:underline"
+                  >
+                    New to ArcanaTable? <span className="text-arcanared">Sign up</span>
+                  </Link>
+                  <br />
+                  <button
+                    type="button"
+                    onClick={() => alert('Forgot password coming soon!')}
+                    className="text-arcanadeep hover:underline mt-1 inline-block"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </nav>

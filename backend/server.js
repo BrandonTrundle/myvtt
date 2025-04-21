@@ -26,6 +26,8 @@ app.use('/uploads', express.static('uploads'));
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/user', require('./routes/user'));
+app.use('/api/characters', require('./routes/character'));
+
 
 // Start server
 const PORT = process.env.PORT || 5000;
