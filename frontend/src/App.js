@@ -11,15 +11,16 @@ import UserWelcome from './pages/UserWelcome';
 import CharacterDashboard from './pages/CharacterDashboard';
 import CreateCampaign from './pages/CreateCampaign';
 import CampaignList from './pages/CampaignList';
-import Messages from './pages/Messages'; 
+import Messages from './pages/Messages';
 import Tabletop from './components/Tabletop';
+import { SocketProvider } from './context/SocketContext';
 
 function App() {
   const location = useLocation();
   const isTabletop = location.pathname.startsWith('/table/');
 
   return (
-    <>
+    <SocketProvider>
       {!isTabletop && <Navbar />}
       <Routes>
         {/* Public Routes */}
@@ -81,7 +82,7 @@ function App() {
           }
         />
       </Routes>
-    </>
+    </SocketProvider>
   );
 }
 

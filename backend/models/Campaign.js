@@ -8,7 +8,11 @@ const campaignSchema = new mongoose.Schema({
   imageUrl: {
     type: String, // relative path like "/uploads/campaigns/abc123.jpg"
   },
-    title: {
+  mapImage: {
+    type: String, // base64 string for the live tabletop map
+    default: null,
+  },
+  title: {
     type: String,
     required: true,
   },

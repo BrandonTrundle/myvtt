@@ -133,6 +133,17 @@ const uploadCampaignImage = async (req, res) => {
   }
 };
 
+const getCampaignById = async (req, res) => {
+  try {
+    const campaign = await Campaign.findById(req.params.id);
+    if (!campaign) return res.status(404).json({ message: 'Campaign not found' });
+    res.json(campaign);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 
 module.exports = {
   createCampaign,
@@ -140,4 +151,5 @@ module.exports = {
   getMyCampaigns,
   deleteCampaign,
   uploadCampaignImage,
+  getCampaignById,
 };

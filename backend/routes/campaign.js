@@ -10,6 +10,7 @@ const {
   joinCampaignByCode,
   deleteCampaign,
   uploadCampaignImage,
+  getCampaignById,
 } = require('../controllers/campaignController');
 
 // Setup multer for image uploads
@@ -33,5 +34,6 @@ router.get('/mine', protect, getMyCampaigns);
 router.post('/join/:code', protect, joinCampaignByCode);
 router.delete('/:id', protect, deleteCampaign);
 router.patch('/:id/image', protect, upload.single('image'), uploadCampaignImage); // ✅ Move this above export
+router.get('/:id', protect, getCampaignById);
 
 module.exports = router;
