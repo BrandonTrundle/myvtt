@@ -1,5 +1,7 @@
 import React, { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { apiFetch, API_BASE } from '../utils/api';
+import { Trash2 } from 'lucide-react';
 
 const CampaignCard = ({
   campaign,
@@ -9,6 +11,7 @@ const CampaignCard = ({
   isCopied,
   isGM,
 }) => {
+  const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [imageUrl, setImageUrl] = useState(
     campaign.imageUrl ? `${API_BASE}${campaign.imageUrl}` : '/default-campaign.jpg'
@@ -85,6 +88,10 @@ const CampaignCard = ({
     }
   };
 
+  const handleEnterTable = () => {
+    navigate(`/table/${campaign._id}`);
+  };
+
   return (
     <div className="bg-white p-4 rounded border border-arcanabrown shadow hover:shadow-md transition relative">
       {/* Campaign Image */}
@@ -121,83 +128,100 @@ const CampaignCard = ({
       <span className="inline-block mt-2 px-2 py-1 text-xs bg-arcanared text-white rounded">
         {isGM ? 'Game Master' : 'Player'}
       </span>
-{/* 🧙 Avatars Section */}
-<div className="flex items-center flex-wrap gap-2 mt-4">
-  {/* GM Avatar (players see this) */}
-  {!isGM && campaign.gm && (
-    <div className="relative group">
-      <img
-        src={campaign.gm.avatarUrl ? `${API_BASE}${campaign.gm.avatarUrl}` : '/defaultav.png'}
-        alt="GM"
-        className="w-10 h-10 rounded-full border"
-      />
-      <div className="absolute bottom-0 left-0 transform translate-y-full bg-black text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition">
-        {campaign.gm.displayName || 'GM'}
-      </div>
-    </div>
-  )}
 
-  {/* Players List */}
-  {campaign.players?.map((player) => (
-    <div className="relative group" key={player._id}>
-      <img
-        src={player.avatarUrl ? `${API_BASE}${player.avatarUrl}` : '/defaultav.png'}
-        alt="Player"
-        className="w-10 h-10 rounded-full border"
-      />
-      <div className="absolute bottom-0 left-0 transform translate-y-full bg-black text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
-        {player.displayName || 'Player'}
-      </div>
-    </div>
-  ))}
-</div>
-      {isGM && (
-        <div className="mt-4 space-y-2 text-sm text-gray-700">
-          <p className="font-medium">Invite Code:</p>
-          <div className="flex items-center gap-2">
-            <span className="bg-gray-100 border px-2 py-1 rounded">{campaign.inviteCode}</span>
-            <button
-              onClick={() => onCopyCode(campaign.inviteCode)}
-              className="text-xs text-blue-600 hover:underline"
-            >
-              {isCopied ? 'Copied!' : 'Copy'}
-            </button>
+      {/* Avatars */}
+      <div className="flex items-center flex-wrap gap-2 mt-4">
+        {!isGM && campaign.gm && (
+          <div className="relative group">
+            <img
+              src={campaign.gm.avatarUrl ? `${API_BASE}${campaign.gm.avatarUrl}` : '/defaultav.png'}
+              alt="GM"
+              className="w-10 h-10 rounded-full border"
+            />
+            <div className="absolute bottom-0 left-0 transform translate-y-full bg-black text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition">
+              {campaign.gm.displayName || 'GM'}
+            </div>
           </div>
+        )}
+        {campaign.players?.map((player) => (
+          <div className="relative group" key={player._id}>
+            <img
+              src={player.avatarUrl ? `${API_BASE}${player.avatarUrl}` : '/defaultav.png'}
+              alt="Player"
+              className="w-10 h-10 rounded-full border"
+            />
+            <div className="absolute bottom-0 left-0 transform translate-y-full bg-black text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
+              {player.displayName || 'Player'}
+            </div>
+          </div>
+        ))}
+      </div>
 
-          <button
-            onClick={() => setIsInviting((prev) => !prev)}
-            className="text-xs text-green-700 underline hover:text-green-900"
-          >
-            {isInviting ? 'Cancel Invite' : 'Send Invite'}
-          </button>
-
-          {isInviting && (
-            <div className="mt-2 space-y-1">
-              <input
-                type="text"
-                value={inviteTo}
-                onChange={(e) => setInviteTo(e.target.value)}
-                placeholder="Enter username..."
-                className="w-full border p-1 rounded text-sm"
-              />
+      {/* GM / Player Controls */}
+      <div className="mt-4 space-y-2 text-sm text-gray-700">
+        {isGM ? (
+          <>
+            <p className="font-medium">Invite Code:</p>
+            <div className="flex items-center gap-2">
+              <span className="bg-gray-100 border px-2 py-1 rounded">{campaign.inviteCode}</span>
               <button
-                onClick={handleSendInvite}
-                disabled={sending}
-                className="bg-arcanared text-white px-3 py-1 text-xs rounded hover:bg-arcanabrown transition w-full"
+                onClick={() => onCopyCode(campaign.inviteCode)}
+                className="text-xs text-blue-600 hover:underline"
               >
-                {sending ? 'Sending...' : 'Send Invite Message'}
+                {isCopied ? 'Copied!' : 'Copy'}
               </button>
             </div>
-          )}
 
+            <button
+              onClick={() => setIsInviting((prev) => !prev)}
+              className="text-xs text-green-700 underline hover:text-green-900"
+            >
+              {isInviting ? 'Cancel Invite' : 'Send Invite'}
+            </button>
+
+            {isInviting && (
+              <div className="mt-2 space-y-2">
+                <input
+                  type="text"
+                  value={inviteTo}
+                  onChange={(e) => setInviteTo(e.target.value)}
+                  placeholder="Username to invite"
+                  className="w-full border p-2 rounded text-sm"
+                />
+                <button
+                  onClick={handleSendInvite}
+                  disabled={sending}
+                  className="bg-arcanared text-white px-3 py-1 rounded text-sm hover:bg-arcanabrown"
+                >
+                  {sending ? 'Sending...' : 'Send Invite'}
+                </button>
+              </div>
+            )}
+
+            <button
+              onClick={handleEnterTable}
+              className="mt-4 text-sm bg-arcanared text-white px-3 py-2 rounded hover:bg-arcanabrown transition w-full"
+            >
+              🚀 Launch Campaign
+            </button>
+
+            <button
+              onClick={() => onDelete(campaign._id)}
+              className="text-sm text-red-600 mt-2 hover:underline"
+            >
+              <Trash2 className="inline-block w-4 h-4 mr-1" />
+              Delete Campaign
+            </button>
+          </>
+        ) : (
           <button
-            onClick={() => onDelete(campaign._id)}
-            className="text-xs text-arcanared underline hover:text-arcanabrown"
+            onClick={handleEnterTable}
+            className="mt-4 text-sm bg-arcanared text-white px-3 py-2 rounded hover:bg-arcanabrown transition w-full"
           >
-            Delete Campaign
+            🧭 Join Table
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

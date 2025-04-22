@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Homepage from './pages/Homepage';
 import Signup from './pages/Signup';
@@ -12,11 +12,15 @@ import CharacterDashboard from './pages/CharacterDashboard';
 import CreateCampaign from './pages/CreateCampaign';
 import CampaignList from './pages/CampaignList';
 import Messages from './pages/Messages'; 
+import Tabletop from './components/Tabletop';
 
 function App() {
+  const location = useLocation();
+  const isTabletop = location.pathname.startsWith('/table/');
+
   return (
     <>
-      <Navbar />
+      {!isTabletop && <Navbar />}
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Homepage />} />
@@ -34,7 +38,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/characters"
           element={
@@ -43,7 +46,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/create-campaign"
           element={
@@ -52,7 +54,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/campaigns"
           element={
@@ -61,12 +62,21 @@ function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/messages"
           element={
             <ProtectedRoute>
               <Messages />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Tabletop Route */}
+        <Route
+          path="/table/:campaignId"
+          element={
+            <ProtectedRoute>
+              <Tabletop />
             </ProtectedRoute>
           }
         />
