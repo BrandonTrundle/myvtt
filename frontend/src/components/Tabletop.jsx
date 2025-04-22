@@ -1,71 +1,57 @@
-import React, { useEffect, useState, useRef, useContext } from 'react';
+// 📂 frontend/pages/Tabletop.jsx
+import React, {
+  useState,
+  useRef,
+  useContext,
+  useCallback,
+  useEffect,
+} from 'react';
 import { useParams } from 'react-router-dom';
-import { io } from 'socket.io-client';
 import { UserContext } from '../context/UserContext';
+import { useSocket } from '../context/SocketContext';
+import { SOCKET_EVENTS } from '../constants/SOCKET_EVENTS';
+
 import DiceRoller from '../components/DiceRoller';
 import MapGrid from '../components/MapGrid';
 
-const socket = io(process.env.REACT_APP_API_BASE);
+import { useChatSocket } from '../hooks/useChatSocket';
+import { useCampaignData } from '../hooks/useCampaignData';
+
 
 const Tabletop = () => {
   const { campaignId } = useParams();
   const { user } = useContext(UserContext);
+  const { socket } = useSocket();
 
+  const [campaign, setCampaign] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
-  const [campaign, setCampaign] = useState(null);
   const chatRef = useRef(null);
 
-  // 🧠 Join campaign room and listen for messages
-  useEffect(() => {
-    socket.emit('join-campaign', campaignId);
+  // 📦 Load campaign data
+  useCampaignData(campaignId, setCampaign);
 
-    socket.on('chat-message', (data) => {
-      setMessages((prev) => [...prev, data]);
-    });
-
-    return () => {
-      socket.off('chat-message');
-    };
-  }, [campaignId]);
-
-  // 📦 Fetch campaign info for GM detection
-  useEffect(() => {
-    const fetchCampaign = async () => {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${process.env.REACT_APP_API_BASE}/api/campaigns/${campaignId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setCampaign(data);
-      } else {
-        console.error('Failed to fetch campaign');
-      }
-    };
-
-    fetchCampaign();
-  }, [campaignId]);
+  // 🔁 Socket: listen to incoming messages
+  useChatSocket(campaignId, (msg) => setMessages((prev) => [...prev, msg]));
 
   // 👑 Determine GM status
   const isGM = user && campaign && (
     user._id === campaign.gm || user._id === campaign.gm?._id
   );
 
-  // 👁 Scroll to newest message
+  // 👁 Auto-scroll chat to bottom
   useEffect(() => {
     chatRef.current?.scrollTo({ top: chatRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages]);
 
-  // 📤 Send chat message
-  const handleSend = (e) => {
+  // 📤 Chat message sender
+  const handleSend = useCallback((e) => {
     e.preventDefault();
     if (!input.trim()) return;
 
     const username = user?.username || user?.displayName || 'Unknown Player';
 
-    socket.emit('chat-message', {
+    socket.emit(SOCKET_EVENTS.CHAT_MESSAGE, {
       campaignId,
       username,
       message: input.trim(),
@@ -73,10 +59,10 @@ const Tabletop = () => {
     });
 
     setInput('');
-  };
+  }, [campaignId, input, socket, user]);
 
-  // 🎲 Handle dice roll
-  const handleRoll = ({ dice, quantity, modifier }) => {
+  // 🎲 Dice roll handler
+  const handleRoll = useCallback(({ dice, quantity, modifier }) => {
     const username = user?.username || user?.displayName || 'Unknown Player';
     const max = parseInt(dice.replace('d', ''), 10);
     const rolls = Array.from({ length: quantity }, () => Math.floor(Math.random() * max) + 1);
@@ -84,10 +70,11 @@ const Tabletop = () => {
 
     const message = `🎲 ${username} rolled ${quantity}${dice}${modifier !== 0 ? (modifier > 0 ? ` + ${modifier}` : ` - ${Math.abs(modifier)}`) : ''}: (${rolls.join(' + ')})${modifier !== 0 ? ` ${modifier > 0 ? '+' : '-'} ${Math.abs(modifier)}` : ''} = ${total}`;
 
-    const audio = new Audio('/sounds/diceroll.mp3');
-    audio.play().catch((err) => console.warn('Dice roll sound failed:', err));
+    new Audio('/sounds/diceroll.mp3').play().catch((err) =>
+      console.warn('Dice roll sound failed:', err)
+    );
 
-    socket.emit('chat-message', {
+    socket.emit(SOCKET_EVENTS.CHAT_MESSAGE, {
       campaignId,
       username,
       message,
@@ -97,13 +84,15 @@ const Tabletop = () => {
       isNat20: dice === 'd20' && rolls.length === 1 && rolls[0] === 20,
       isNat1: dice === 'd20' && rolls.length === 1 && rolls[0] === 1,
     });
-  };
+  }, [campaignId, socket, user]);
 
-  // 🐞 Debug log
+  // 🐞 Dev logs
   useEffect(() => {
-    console.log('👤 User:', user);
-    console.log('🎯 Campaign:', campaign);
-    console.log('🧠 isGM:', isGM);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('👤 User:', user);
+      console.log('🎯 Campaign:', campaign);
+      console.log('🧠 isGM:', isGM);
+    }
   }, [user, campaign]);
 
   return (
@@ -119,17 +108,18 @@ const Tabletop = () => {
         </ul>
       </div>
 
-      {/* Tabletop Main Area */}
+      {/* Tabletop Canvas */}
       <div className="flex-grow overflow-auto bg-black p-16">
-      {campaign && (
-          <MapGrid campaign={campaign} isGM={isGM} />
-        )}
+        {campaign && <MapGrid campaign={campaign} isGM={isGM} />}
       </div>
 
-      {/* Right Sidebar Chat */}
+      {/* Chat Sidebar */}
       <div className="w-80 bg-gray-800 border-l border-gray-700 p-4 flex-shrink-0 flex flex-col">
         <h2 className="text-lg font-bold mb-4">💬 Chat & Rolls</h2>
-        <div ref={chatRef} className="flex-grow overflow-y-auto bg-black/20 rounded p-2 mb-2 space-y-1">
+        <div
+          ref={chatRef}
+          className="flex-grow overflow-y-auto bg-black/20 rounded p-2 mb-2 space-y-1"
+        >
           {messages.map((msg, i) => {
             let bg = '';
             let text = 'text-gray-300';

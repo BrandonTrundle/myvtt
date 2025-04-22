@@ -1,58 +1,31 @@
 // 📂 frontend/components/MapGrid.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { useSocket } from '../context/SocketContext';
+import { SOCKET_EVENTS } from '../constants/SOCKET_EVENTS';
+import { useMapSocket } from '../hooks/useMapSocket';
+import { useFetchMap } from '../hooks/useFetchMap';
 
 const MapGrid = ({ campaign, isGM }) => {
   const [mapUrl, setMapUrl] = useState(null);
-  const [zoom, setZoom] = useState(1); // 1x = 100%
+  const [zoom, setZoom] = useState(1);
   const [showGrid, setShowGrid] = useState(true);
 
   const { socket, isConnected, joinCampaign } = useSocket();
   const campaignId = campaign?._id;
 
-  // 🌐 Join socket room + listen for map + settings
-  useEffect(() => {
-    if (campaignId && isConnected && socket) {
-      joinCampaign(campaignId);
-
-      socket.on('map-uploaded', ({ imageUrl }) => {
-        setMapUrl(imageUrl);
-      });
-
-      socket.on('map-settings-updated', ({ zoom, showGrid }) => {
-        if (zoom !== undefined) setZoom(zoom);
-        if (showGrid !== undefined) setShowGrid(showGrid);
-      });
-
-      return () => {
-        socket.off('map-uploaded');
-        socket.off('map-settings-updated');
-      };
+  useMapSocket(
+    campaignId,
+    (imageUrl) => setMapUrl(imageUrl),
+    ({ zoom, showGrid }) => {
+      if (zoom !== undefined) setZoom(zoom);
+      if (showGrid !== undefined) setShowGrid(showGrid);
     }
-  }, [campaignId, isConnected, socket]);
+  );
 
-  // 📦 Load map from backend on mount
-  useEffect(() => {
-    const fetchMap = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const res = await axios.get(
-          `${process.env.REACT_APP_API_BASE}/api/campaigns/${campaignId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        if (res.data?.mapUrl) setMapUrl(res.data.mapUrl);
-      } catch (err) {
-        console.warn('🕳️ No map or error fetching');
-      }
-    };
+  useFetchMap(campaignId, setMapUrl);
 
-    if (campaignId) fetchMap();
-  }, [campaignId]);
 
-  // 📤 Upload new map
   const handleFileChange = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -69,18 +42,15 @@ const MapGrid = ({ campaign, isGM }) => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      if (res.data?.imageUrl) {
-        setMapUrl(res.data.imageUrl);
-      }
+      if (res.data?.imageUrl) setMapUrl(res.data.imageUrl);
     } catch (err) {
       console.error('❌ Upload failed:', err);
     }
   };
 
-  // 🌐 Broadcast map setting updates
   const broadcastSettings = (newSettings) => {
     if (socket && isGM) {
-      socket.emit('map-settings-updated', {
+      socket.emit(SOCKET_EVENTS.MAP_SETTINGS_UPDATED, {
         zoom,
         showGrid,
         ...newSettings,
@@ -104,7 +74,6 @@ const MapGrid = ({ campaign, isGM }) => {
     <div className="map-grid mt-4 space-y-4">
       <h3 className="text-lg font-bold">🗺️ Campaign Map</h3>
 
-      {/* 🧙 GM Controls */}
       {isGM && (
         <div className="flex gap-4 items-center mb-2">
           <input type="file" accept="image/*" onChange={handleFileChange} />
@@ -120,7 +89,6 @@ const MapGrid = ({ campaign, isGM }) => {
         </div>
       )}
 
-      {/* 🧱 Map Container */}
       <div className="relative overflow-auto border rounded shadow max-w-full">
         <div
           className="relative inline-block"
@@ -137,7 +105,6 @@ const MapGrid = ({ campaign, isGM }) => {
             />
           )}
 
-          {/* 🧮 Grid Overlay */}
           {showGrid && (
             <div
               className="absolute inset-0 pointer-events-none"

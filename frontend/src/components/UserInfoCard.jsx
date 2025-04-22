@@ -1,18 +1,24 @@
-import React, { useRef, useState, useEffect, useContext } from 'react';
+import React, {
+  useRef,
+  useState,
+  useEffect,
+  useContext,
+  useCallback,
+} from 'react';
 import { Bell, Mail } from 'lucide-react';
 import { UserContext } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
-import { apiFetch } from '../utils/api';
-import { API_BASE } from '../utils/api';
+import { apiFetch, API_BASE } from '../utils/api';
+import { useUnreadMessages } from '../hooks/useUnreadMessages';
 
 const UserInfoCard = ({ user, memberSince, hoursPlayed }) => {
-  const fileInputRef = useRef(null);
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
   const { fetchUser } = useContext(UserContext);
 
   const [avatarUrl, setAvatarUrl] = useState('/defaultav.png');
   const [hasNewNotifications, setHasNewNotifications] = useState(true);
-  const [hasNewMessages, setHasNewMessages] = useState(false);
+  const hasNewMessages = useUnreadMessages(); // 🔁 Refactored
 
   useEffect(() => {
     if (user.avatarUrl) {
@@ -20,24 +26,10 @@ const UserInfoCard = ({ user, memberSince, hoursPlayed }) => {
     }
   }, [user]);
 
-  useEffect(() => {
-    const checkMessages = async () => {
-      try {
-        const res = await apiFetch('/api/messages/unread');
-        const data = await res.json();
-        setHasNewMessages(data.unread > 0);
-      } catch (err) {
-        console.error('❌ Failed to check unread messages', err);
-      }
-    };
+  const handleAvatarClick = () => fileInputRef.current?.click();
 
-    checkMessages();
-  }, []);
-
-  const handleAvatarClick = () => fileInputRef.current.click();
-
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
+  const handleFileChange = useCallback(async (e) => {
+    const file = e.target.files?.[0];
     if (!file) return;
 
     const formData = new FormData();
@@ -61,7 +53,7 @@ const UserInfoCard = ({ user, memberSince, hoursPlayed }) => {
     } catch (err) {
       console.error('Upload error', err);
     }
-  };
+  }, [fetchUser]);
 
   return (
     <div className="flex items-center bg-white p-4 rounded border border-arcanabrown shadow-md text-sm text-arcanadeep max-w-md gap-4 relative">

@@ -1,30 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { apiFetch } from '../utils/api';
 import CampaignCard from '../components/CampaignCard';
+import { useMyCampaigns } from '../hooks/useMyCampaigns';
 
 const CampaignList = () => {
-  const [campaigns, setCampaigns] = useState([]);
+  const { campaigns, setCampaigns, fetchCampaigns } = useMyCampaigns();
   const [copiedCode, setCopiedCode] = useState(null);
   const [joinCode, setJoinCode] = useState('');
   const [joinLoading, setJoinLoading] = useState(false);
-
-  const fetchCampaigns = async () => {
-    try {
-      const res = await apiFetch('/api/campaigns/mine');
-      const data = await res.json();
-      if (res.ok) {
-        setCampaigns(data);
-      } else {
-        console.error('Failed to fetch campaigns:', data.message);
-      }
-    } catch (err) {
-      console.error('❌ Fetch error:', err);
-    }
-  };
-
-  useEffect(() => {
-    fetchCampaigns();
-  }, []);
 
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm('Delete this campaign?');

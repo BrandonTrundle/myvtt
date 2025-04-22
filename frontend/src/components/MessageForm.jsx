@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { apiFetch } from '../utils/api';
 
 const MessageForm = ({ onSuccess }) => {
@@ -11,12 +11,12 @@ const MessageForm = ({ onSuccess }) => {
   const [status, setStatus] = useState(null);
   const [sending, setSending] = useState(false);
 
-  const handleChange = (e) => {
+  const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  }, []);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     setSending(true);
     setStatus(null);
@@ -30,11 +30,11 @@ const MessageForm = ({ onSuccess }) => {
       const data = await res.json();
 
       if (res.ok) {
-        setStatus('Message sent!');
+        setStatus('✅ Message sent!');
         setFormData({ toUsername: '', subject: '', body: '' });
-        if (onSuccess) onSuccess();
+        onSuccess?.(); // Optional chaining
       } else {
-        setStatus(data.message || 'Error sending message.');
+        setStatus(data.message || '❌ Error sending message.');
       }
     } catch (err) {
       console.error('❌ Failed to send message:', err);
@@ -42,7 +42,7 @@ const MessageForm = ({ onSuccess }) => {
     } finally {
       setSending(false);
     }
-  };
+  }, [formData, onSuccess]);
 
   return (
     <form
@@ -87,7 +87,11 @@ const MessageForm = ({ onSuccess }) => {
         {sending ? 'Sending...' : 'Send Message'}
       </button>
 
-      {status && <p className="text-sm mt-2">{status}</p>}
+      {status && (
+        <p className={`text-sm mt-2 ${status.startsWith('✅') ? 'text-green-600' : 'text-red-600'}`}>
+          {status}
+        </p>
+      )}
     </form>
   );
 };

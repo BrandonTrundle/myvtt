@@ -1,34 +1,39 @@
-import React, { useState, useRef, useEffect, useContext } from 'react';
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useContext,
+  useCallback,
+} from 'react';
 import { Bell } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { UserContext } from '../context/UserContext';
-import { apiFetch } from '../utils/api'; // Adjust path if needed
-import { API_BASE } from '../utils/api';
-
+import { apiFetch, API_BASE } from '../utils/api';
 
 const Navbar = () => {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef();
   const navigate = useNavigate();
+  const menuRef = useRef();
 
+  const [menuOpen, setMenuOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
   const { user, setUser, fetchUser } = useContext(UserContext);
 
+  // 🖱️ Close dropdown if clicked outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setMenuOpen(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogin = async (e) => {
+  // 🔐 Login handler
+  const handleLogin = useCallback(async (e) => {
     e.preventDefault();
 
     try {
@@ -46,16 +51,9 @@ const Navbar = () => {
       }
 
       localStorage.setItem('token', data.token);
-
-      // Set user in context
       await fetchUser();
 
-      // Redirect based on onboarding status
-      if (data.user?.onboardingComplete) {
-        navigate('/user-welcome');
-      } else {
-        navigate('/welcome');
-      }
+      navigate(data.user?.onboardingComplete ? '/user-welcome' : '/welcome');
 
       setMenuOpen(false);
       setError('');
@@ -63,13 +61,14 @@ const Navbar = () => {
       console.error(err);
       setError('Server error during login');
     }
-  };
+  }, [email, password, fetchUser, navigate]);
 
-  const handleLogout = () => {
+  // 🔓 Logout handler
+  const handleLogout = useCallback(() => {
     localStorage.removeItem('token');
     setUser(null);
     navigate('/');
-  };
+  }, [navigate, setUser]);
 
   return (
     <nav className="bg-parchment border-b border-arcanabrown px-6 py-3 flex justify-between items-center shadow text-sm font-semibold text-arcanabrown">
@@ -100,19 +99,13 @@ const Navbar = () => {
               alt="User Avatar"
               className="w-8 h-8 rounded-full border object-cover"
             />
-            <button
-              onClick={handleLogout}
-              className="hover:text-arcanared"
-            >
+            <button onClick={handleLogout} className="hover:text-arcanared">
               Sign Out
             </button>
           </div>
         ) : (
           <>
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="hover:text-arcanared"
-            >
+            <button onClick={() => setMenuOpen(!menuOpen)} className="hover:text-arcanared">
               Sign In ▾
             </button>
 

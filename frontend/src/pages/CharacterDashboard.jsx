@@ -1,22 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import CharacterForm from '../components/CharacterForm';
-import { apiFetch } from '../utils/api'; // adjust path as needed
-
+import { useCharacters } from '../hooks/useCharacters';
+import { apiFetch } from '../utils/api';
 
 const CharacterDashboard = () => {
-  const [characters, setCharacters] = useState([]);
-  const token = localStorage.getItem('token');
-
-  const fetchCharacters = async () => {
-    try {
-      const res = await apiFetch('/api/characters');
-      const data = await res.json();
-      if (res.ok) setCharacters(data);
-      else console.error(data.message);
-    } catch (err) {
-      console.error('❌ Failed to fetch characters:', err);
-    }
-  };
+  const { characters, setCharacters, fetchCharacters } = useCharacters();
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this character?')) return;
@@ -36,10 +24,6 @@ const CharacterDashboard = () => {
       console.error('❌ Delete failed:', err);
     }
   };
-
-  useEffect(() => {
-    fetchCharacters();
-  }, []);
 
   return (
     <div className="bg-parchment min-h-screen px-6 py-10 text-arcanadeep">
