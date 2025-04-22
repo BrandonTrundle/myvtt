@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useRef, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import { io } from 'socket.io-client';
-import { UserContext } from '../context/UserContext'; // Adjust path if needed
+import { UserContext } from '../context/UserContext';
+import DiceRoller from '../components/DiceRoller';
 
 const socket = io(process.env.REACT_APP_API_BASE);
- // Update this for production
 
 const Tabletop = () => {
   const { campaignId } = useParams();
@@ -39,10 +39,34 @@ const Tabletop = () => {
       campaignId,
       username,
       message: input.trim(),
+      type: 'chat',
     });
 
     setInput('');
   };
+
+  const handleRoll = ({ dice, quantity, modifier }) => {
+    const username = user?.username || user?.displayName || 'Unknown Player';
+  
+    const max = parseInt(dice.replace('d', ''), 10);
+    const rolls = Array.from({ length: quantity }, () => Math.floor(Math.random() * max) + 1);
+    const total = rolls.reduce((sum, val) => sum + val, 0) + modifier;
+  
+    const message = `🎲 ${username} rolled ${quantity}${dice}${modifier !== 0 ? (modifier > 0 ? ` + ${modifier}` : ` - ${Math.abs(modifier)}`) : ''}: (${rolls.join(' + ')})${modifier !== 0 ? ` ${modifier > 0 ? '+' : '-'} ${Math.abs(modifier)}` : ''} = ${total}`;
+  
+    // 🎧 Play sound
+    const audio = new Audio('/sounds/diceroll.mp3');
+    audio.play().catch((err) => console.warn('Dice roll sound failed:', err));
+  
+    // 🧠 Emit roll
+    socket.emit('chat-message', {
+      campaignId,
+      username,
+      message,
+      type: 'roll',
+    });
+  };
+  
 
   return (
     <div className="w-screen h-screen flex bg-gray-900 text-white overflow-hidden">
@@ -68,9 +92,16 @@ const Tabletop = () => {
       {/* Right Chat Panel */}
       <div className="w-80 bg-gray-800 border-l border-gray-700 p-4 flex-shrink-0 flex flex-col">
         <h2 className="text-lg font-bold mb-4">💬 Chat & Rolls</h2>
-        <div ref={chatRef} className="flex-grow overflow-y-auto bg-black/20 rounded p-2 mb-2">
+        <div ref={chatRef} className="flex-grow overflow-y-auto bg-black/20 rounded p-2 mb-2 space-y-1">
           {messages.map((msg, i) => (
-            <p key={i} className="text-sm text-gray-300">
+            <p
+              key={i}
+              className={`text-sm ${
+                msg.type === 'roll'
+                  ? 'bg-yellow-900 text-yellow-300 px-2 py-1 rounded'
+                  : 'text-gray-300'
+              }`}
+            >
               <span className="font-bold text-blue-400">{msg.username}:</span> {msg.message}
             </p>
           ))}
@@ -91,6 +122,8 @@ const Tabletop = () => {
           </button>
         </form>
       </div>
+
+      <DiceRoller onRoll={handleRoll} />
     </div>
   );
 };
