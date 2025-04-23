@@ -1,0 +1,732 @@
+/* CharacterSheet.css */
+/* General margin utility for content wrapper */
+
+* {
+  box-sizing: border-box;
+}
+.character-sheet-container {
+  padding-left: 1.5rem; /* 24px */
+  padding-right: 1.5rem; /* 24px */
+  padding-top: 1.5rem; /* 24px */
+}
+/* HEADER SECTION----------------------------------------------------------------------------------------- */
+.character-header {
+  display: flex;
+  align-items: stretch;
+  flex-direction: row; /* ← ensures horizontal layout */
+  justify-content: space-between;
+  align-items: stretch;
+  border: 1px solid black;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #fdf6e3;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  font-family: sans-serif;
+  height: 150px; /* give it room to breathe */
+}
+
+.charname-section {
+  width: 32%;
+  background-color: #f9f3dc;
+  border-right: 1px solid black;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 16px;
+  
+}
+
+.charname-label {
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.charname-input {
+  font-size: 1.25rem;
+  text-align: center;
+  font-weight: 600;
+  border: 1px solid #ccc;
+  padding: 8px;
+  border-radius: 4px;
+  background-color: white;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.charinfo-grid {
+  width: 68%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 16px;
+  background-color: #fdf6e3;
+}
+
+.charinfo-field {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.charinfo-label {
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  text-align: center;
+}
+
+.charinfo-input {
+  width: 100%;
+  font-size: 0.875rem;
+  text-align: center;
+  border: none;
+  background-color: white;
+  outline: none;
+}
+/* HEADER SECTION END----------------------------------------------------------------------------------------- */
+
+/* ABILITY SCORES--------------------------------------------------------------------------------------------- */
+.ability-scores {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  margin-left: 0.5rem; /* optional nudge if it's still too centered */
+}
+
+.ability-box {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  width: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  font-family: sans-serif;
+}
+
+.ability-label {
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.ability-score-input {
+  font-size: 32px;
+  font-weight: bold;
+  text-align: center;
+  border: none;
+  width: 100%;
+  margin-bottom: 4px;
+  background-color: #f9f3dc;
+  border-radius: 4px;
+  padding: 4px;
+}
+
+.ability-mod-input {
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  border: 1px solid #aaa;
+  background-color: #fff;
+  border-radius: 12px;
+  width: 50px;
+  padding: 2px;
+}
+/* ABILITY SCORES END--------------------------------------------------------------------------------------------- */
+
+/* CORE STATS--------------------------------------------------------------------------------------------- */
+/* CoreStats styles */
+.core-stats {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.core-stats-top {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.core-box {
+  width: 135px; /* Or whatever width looks good */
+  flex: 0 1 auto;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 10px;
+  text-align: center;
+  font-family: sans-serif;
+  margin-left: 5px;
+}
+
+.core-label {
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.core-input {
+  width: 50%;
+  font-size: 1rem;
+  text-align: center;
+  padding: 4px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.core-checkbox {
+  width: 18px;
+  height: 18px;
+  margin-top: 4px;
+}
+
+.saving-throws-box {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 12px;
+  max-width: 250px; /* or whatever width makes sense */
+  box-sizing: border-box;
+
+}
+
+.saving-throws-label {
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.saving-throw-row {
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.save-checkbox {
+  width: 14px;
+  height: 14px;
+}
+
+.save-input {
+  width: 40px;
+  text-align: center;
+  padding: 2px;
+  font-size: 0.875rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.save-label {
+  font-size: 0.875rem;
+  flex: 1;
+}
+
+.core-stats-bottom {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+  align-items: start;
+  justify-content: space-between;
+}
+
+.saving-throws-box {
+  flex: 1;
+  max-width: 230px;
+  width: 95%;
+  margin-left: 5px;    
+  /* existing styles */
+}
+
+.combat-stats-box {
+  height: 80%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Even spacing */
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 12px;
+  flex: 1;
+  min-width: 240px;
+}
+
+.combat-hp-section {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+/* CORE STATS END--------------------------------------------------------------------------------------------- */
+
+/* COMBAT STATS----------------------------------------------------------------------------------------------- */
+/* CombatStats styles */
+.combat-stats {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.combat-box {
+  flex: 1;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 12px;
+  text-align: center;
+  font-family: sans-serif;
+}
+
+.combat-label {
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.combat-input {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+
+/* HIT POINTS SECTION----------------------------------------------------------------------------------------------- */
+.hit-points-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  justify-content: space-between;
+}
+
+.hp-regular,
+.hp-temp {
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  padding: 12px;
+  gap: 8px;
+  flex: 1;
+}
+
+.hp-label {
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.hp-label.small {
+  font-size: 9px;
+  font-weight: normal;
+}
+
+.hp-max,
+.hp-current,
+.hp-temp-input {
+  text-align: center;
+  font-size: 1rem;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+/* HIT POINTS SECTION END----------------------------------------------------------------------------------------------- */
+
+/* DEATH SAVES SECTION ---------------------------------------------------------------------------------- */
+.death-saves-container {
+  display: flex;
+  gap: 16px;
+  margin-top: 80px;
+  width: 100%;
+  align-items: stretch; /* <-- Add this to match height and let flex apply evenly */
+}
+
+.hit-dice-box {
+  flex: 2; /* takes 2 parts of 3 */
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 12px;
+  font-family: sans-serif;
+
+}
+
+.death-saves-box {
+  flex: 1; /* takes 1 part of 3 */
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 12px;
+  font-family: sans-serif;
+  margin-top: 8px;
+}
+
+.hit-dice-label,
+.death-saves-label {
+  font-size: 0.875rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.hit-dice-input {
+  width: 100%;
+  min-width: 80px; /* enforce minimum for better proportions */
+  font-size: 1rem;
+  text-align: center;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.death-save-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.death-save-row span {
+  font-size: 0.875rem;
+  font-weight: bold;
+}
+
+.death-save-circles {
+  display: flex;
+  gap: 8px;
+}
+
+.death-save-checkbox {
+  width: 16px;
+  height: 16px;
+}
+/* DEATH SAVES SECTION END---------------------------------------------------------------------------------- */
+
+/* TRAITS SECTION BEGIN---------------------------------------------------------------------------------- */
+.traits-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.trait-block {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-family: sans-serif;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+}
+
+.trait-label {
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  display: block;
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.trait-textarea {
+  width: 100%;
+  padding: 8px;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fdf6e3;
+  resize: vertical;
+}
+/* TRAITS SECTION END---------------------------------------------------------------------------------- */
+
+/* ATTACK SECTION ---------------------------------------------------------------------- */
+.attack-section {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 12px;
+  margin-top: -15px;
+  font-family: sans-serif;
+}
+
+.attack-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.5fr 1.5fr; /* ← Adjusted proportions */
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.attack-label {
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.attack-name{
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: center;
+  background-color: #eef;
+  font-size: 0.60rem;
+}
+
+.attack-bonus{
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: center;
+  background-color: #eef;
+  font-size: 0.60rem;
+}
+
+.attack-input {
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: center;
+  background-color: #eef;
+  font-size: 0.60rem;
+}
+
+.attack-textarea {
+  width: 100%;
+  min-height: 120px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 8px;
+  resize: vertical;
+  background-color: #eef;
+}
+/* ATTACK SECTION END ---------------------------------------------------------------------- */
+
+/* OTHER FEATURES & TRAITS SECTION --------------------------------------- */
+
+.other-features-section {
+  display: flex;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.textblock {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 12px;
+  font-family: sans-serif;
+}
+
+.textblock-label {
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.textblock-textarea {
+  height: 180px;
+  resize: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 8px;
+  font-size: 0.875rem;
+  font-family: inherit;
+}
+/* OTHER FEATURES & TRAITS SECTION --------------------------------------- */
+
+/* SKILLS BLOCK ------------------------------------------------------------ */
+.skills-block {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 12px;
+  font-family: sans-serif;
+  width: 80%;
+  margin-left: 5px;
+  align-self: flex-start;
+}
+
+.skills-title {
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.skills-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.skill-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.skill-checkbox {
+  width: 14px;
+  height: 14px;
+}
+
+.skill-mod {
+  width: 40px;
+  text-align: center;
+  font-size: 0.875rem;
+  padding: 2px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.skill-name {
+  flex: 1;
+  padding: 2px 6px;
+  font-size: 0.770rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 75%
+
+}
+
+.skill-stat {
+  width: 60px;
+  text-align: center;
+  padding: 2px 6px;
+  font-size: 0.875rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.add-skill-btn {
+  margin-top: 10px;
+  padding: 6px 12px;
+  background-color: #fdf6e3;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
+}
+
+.add-skill-btn:hover {
+  background-color: #f0e4c6;
+}
+
+/* DEBUG ------------------------------------------------------------ */
+/* Three-column layout */
+.character-columns {
+  display: flex;
+  gap: 8px; /* 16px gap between columns */
+  align-items: start;
+
+}
+
+.character-column {
+  flex: 1;
+  /* border: 2px solid red; Testing only */
+  min-height:700px;
+}
+.left-column-layout {
+  display: flex;
+  height: 100%;
+}
+
+.left-tall-box {
+  width: 35%;
+  min-height: 300px; /* adjust as needed */
+  /* border: 2px solid red; Testing only */
+}
+
+.right-stacked-boxes {
+  display: grid;
+  grid-template-rows: repeat(3, auto);
+  align-items: start;
+  gap: 8px;
+}
+
+.stacked-box:nth-child(1) {
+  height: 20%;
+  /* border: 2px solid red; Testing only */
+}
+
+.stacked-box:nth-child(2) {
+  height: 30%;
+  /* border: 2px solid red; Testing only */
+}
+
+.stacked-box:nth-child(3) {
+  height: 50%;
+  /* border: 2px solid red; Testing only */
+}
+
+/* FEATURES AND TRAITS SECTION ------------------------------------------------------------ */
+.features-box {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 12px;
+  font-family: sans-serif;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.features-label {
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.features-textarea {
+  width: 100%;
+  height: 100%;
+  flex-grow: 1;
+  padding: 8px;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fdf6e3;
+  resize: vertical;
+}

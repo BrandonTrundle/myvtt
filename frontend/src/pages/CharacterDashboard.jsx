@@ -2,9 +2,12 @@ import React from 'react';
 import CharacterForm from '../components/CharacterForm';
 import { useCharacters } from '../hooks/useCharacters';
 import { apiFetch } from '../utils/api';
+import { useState } from 'react';
+import CharacterSheetWindow from '../components/CharacterSheet/CharacterSheetWindow';
 
 const CharacterDashboard = () => {
   const { characters, setCharacters, fetchCharacters } = useCharacters();
+  const [showSheet, setShowSheet] = useState(false);
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this character?')) return;
@@ -28,6 +31,15 @@ const CharacterDashboard = () => {
   return (
     <div className="bg-parchment min-h-screen px-6 py-10 text-arcanadeep">
       <h1 className="text-4xl font-bold mb-6">Your Characters</h1>
+
+      {/* Character sheet launcher */}
+      <button
+        onClick={() => setShowSheet(true)}
+        className="mb-6 bg-arcanared text-white px-4 py-2 rounded hover:bg-arcanabrown"
+      >
+        📜 Open Character Sheet
+      </button>
+      {showSheet && <CharacterSheetWindow onClose={() => setShowSheet(false)} />}
 
       {/* Character form */}
       <CharacterForm onCreate={fetchCharacters} />
