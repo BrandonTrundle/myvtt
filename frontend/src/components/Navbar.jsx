@@ -37,13 +37,20 @@ const Navbar = () => {
     e.preventDefault();
 
     try {
-      const res = await apiFetch('/api/auth/login', {
+      const res = await apiFetch('/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text); // ✅ Only try if it's real JSON
+      } catch (err) {
+        console.warn("⚠️ Could not parse JSON. Response was:", text);
+        return; // Or handle fallback logic here
+      }
 
       if (!res.ok) {
         setError(data.message || 'Login failed');

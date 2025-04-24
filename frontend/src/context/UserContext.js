@@ -9,14 +9,27 @@ export const UserProvider = ({ children }) => {
 
   const fetchUser = async () => {
     const token = localStorage.getItem('token');
-    if (!token) return;
+    if (!token) {
+      console.warn('⚠️ No token in localStorage');
+      return;
+    }
+  
+    console.log('📡 Fetching user info from:', '/api/auth/me');
+    console.log('🔐 Using token:', token);
   
     try {
-      const res = await apiFetch('/api/auth/me');
-      const data = await res.json();
-      if (res.ok) setUser(data);
+      const res = await apiFetch('/auth/me');
+      const text = await res.text();
+      console.log("📩 Raw user info:", text);
+    
+      const data = JSON.parse(text);
+      if (res.ok) {
+        setUser(data); // or use it however needed
+      } else {
+        console.warn("⚠️ Server returned error:", data);
+      }
     } catch (err) {
-      console.error('❌ Failed to fetch user info:', err);
+      console.error("❌ Could not fetch user info:", err);
     }
   };
 

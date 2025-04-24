@@ -11,18 +11,32 @@ const UserWelcome = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await apiFetch('/api/auth/me');
-        const data = await res.json();
-        if (res.ok) setUser(data);
+        const res = await apiFetch('/auth/me');
+        const text = await res.text();
+        console.log("📩 Raw user info:", text);
+      
+        const data = JSON.parse(text);
+        if (res.ok) {
+          setUser(data); // or use it however needed
+        } else {
+          console.warn("⚠️ Server returned error:", data);
+        }
       } catch (err) {
-        console.error('❌ Failed to fetch user', err);
+        console.error("❌ Could not fetch user info:", err);
       }
     };
 
     const fetchCampaigns = async () => {
       try {
-        const res = await apiFetch('/api/campaigns/mine');
-        const data = await res.json();
+        const res = await apiFetch('/campaigns/mine');
+        const text = await res.text();
+        let data;
+        try {
+          data = JSON.parse(text); // ✅ Only try if it's real JSON
+        } catch (err) {
+          console.warn("⚠️ Could not parse JSON. Response was:", text);
+          return; // Or handle fallback logic here
+        }
         if (res.ok) setCampaigns(data);
       } catch (err) {
         console.error('❌ Error fetching campaigns:', err);
@@ -40,7 +54,7 @@ const UserWelcome = () => {
       if (minutes <= 0) return;
 
       try {
-        await apiFetch('/api/user/hours-played', {
+        await apiFetch('/user/hours-played', {
           method: 'PATCH',
           body: JSON.stringify({ minutes }),
         });

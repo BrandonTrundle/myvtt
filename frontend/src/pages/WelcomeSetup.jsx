@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiFetch } from '../utils/api'; // ✅ import apiFetch
+import { apiFetch } from '../utils/api';
+import { UserContext } from '../context/UserContext'; // ✅ hook into user context
 
 const WelcomeSetup = () => {
   const [step, setStep] = useState(0);
@@ -14,21 +15,27 @@ const WelcomeSetup = () => {
   });
 
   const navigate = useNavigate();
+  const { setUser } = useContext(UserContext); // ✅ pull from context
 
   useEffect(() => {
     const checkOnboarding = async () => {
       try {
-        const res = await apiFetch('/api/auth/me');
-        const data = await res.json();
-        if (data.onboardingComplete) {
-          navigate('/user-welcome');
+        const res = await apiFetch('/auth/me');
+        const text = await res.text();
+        console.log("📩 Raw user info:", text);
+
+        const data = JSON.parse(text);
+        if (res.ok) {
+          setUser(data); // ✅ now valid
+        } else {
+          console.warn("⚠️ Server returned error:", data);
         }
       } catch (err) {
-        console.error('Error checking onboarding status', err);
+        console.error("❌ Could not fetch user info:", err);
       }
     };
     checkOnboarding();
-  }, [navigate]);
+  }, [navigate, setUser]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -48,11 +55,18 @@ const WelcomeSetup = () => {
 
   const handleSubmit = async () => {
     try {
-      const res = await apiFetch('/api/auth/onboarding', {
+      const res = await apiFetch('/auth/onboarding', {
         method: 'PATCH',
         body: JSON.stringify({ ...form, onboardingComplete: true }),
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text); // ✅ Only try if it's real JSON
+      } catch (err) {
+        console.warn("⚠️ Could not parse JSON. Response was:", text);
+        return; // Or handle fallback logic here
+      }
       if (res.ok) {
         navigate('/user-welcome');
       } else {

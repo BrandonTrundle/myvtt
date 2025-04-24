@@ -730,3 +730,520 @@
   background-color: #fdf6e3;
   resize: vertical;
 }
+
+
+/* WISDOM PROFICIENCIES SECTION ------------------------------------------------------------ */
+.wisdom-proficiencies-section {
+  display: flex;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.wisdom-box {
+  flex: 0 0 150px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 12px;
+  text-align: center;
+  font-family: sans-serif;
+}
+
+.wisdom-label {
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.wisdom-input {
+  width: 100%;
+  font-size: 1.25rem;
+  font-weight: bold;
+  text-align: center;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.proficiencies-box {
+  flex: 1;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 12px;
+  font-family: sans-serif;
+}
+
+.proficiencies-label {
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.proficiencies-textarea {
+  width: 100%;
+  height: 100px;
+  resize: vertical;
+  padding: 8px;
+  font-size: 0.875rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background-color: #fdf6e3;
+}
+
+
+/* Equipment SECTION ------------------------------------------------------------ */
+
+.equipment-section {
+  margin-top: 24px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 12px;
+  font-family: sans-serif;
+}
+
+.equipment-label {
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.equipment-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.equipment-name-input {
+  font-size: 0.9rem;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.equipment-desc-input {
+  font-size: 0.875rem;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+.add-equipment-btn {
+  margin-top: 8px;
+  background-color: #4a5568;
+  color: white;
+  padding: 6px 12px;
+  font-size: 0.875rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* PHYSICAL ATTRIBUTES BLOCK --------------------------------------------------- */
+.physical-attributes-block {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 12px;
+  font-family: sans-serif;
+  margin-top: 24px;
+  margin-bottom: 1rem;
+  width: 100%
+}
+
+.physical-attributes-block .row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.physical-attributes-block .field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.physical-attributes-block input {
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 0.875rem;
+  background-color: #fdf6e3;
+}
+
+.physical-attributes-block label {
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-top: 4px;
+  text-align: center;
+}
+
+/* CHARACTER APPEARANCE BLOCK --------------------------------------------------- */
+.character-appearance-block {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 12px;
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  margin-top: 24px;
+}
+
+.character-appearance-block label {
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.appearance-textarea {
+  flex: 1;
+  width: 100%;
+  resize: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 8px;
+  font-size: 0.875rem;
+  background-color: #fdf6e3;
+}
+
+/* ALLIES & ORGANIZATIONS BLOCK --------------------------------------------------- */
+.allies-orgs-block {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 12px;
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  min-height: 240px; /* or adjust as needed */
+  margin-top: 24px;
+}
+
+.allies-orgs-block label {
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.allies-textarea {
+  width: 100%;
+  height: 100px;
+  resize: vertical;
+  padding: 8px;
+  font-size: 0.875rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fdf6e3;
+}
+
+.org-symbol-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-top: 8px;
+  padding-bottom: 30px;
+}
+
+.org-symbol-row .field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.org-symbol-row .field:last-child {
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.org-input {
+  padding: 6px;
+  font-size: 0.875rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+}
+
+.symbol-preview {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border: 1px solid #999;
+  border-radius: 4px;
+  margin: 6px 0;
+}
+/* TREASURE BLOCK ------------------------------------------------------------ */
+.coin-inputs {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.coin-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.coin-field label {
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.coin-input {
+  width: 100%;
+  padding: 6px;
+  text-align: center;
+  font-size: 0.875rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fdf6e3;
+}
+
+.treasure-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.treasure-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.treasure-row input {
+  flex: 1;
+}
+
+.remove-btn {
+  background-color: #b91c1c;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  height: 100%;
+}
+
+.remove-btn:hover {
+  background-color: #991b1b;
+}
+
+/* TREASURE BLOCK ------------------------------------------------------------ */
+.treasure-block {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 12px;
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 130px;
+}
+
+.treasure-block .textblock-label {
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.treasure-block .coin-inputs {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.treasure-block .coin-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.treasure-block .coin-field label {
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.treasure-block .coin-input {
+  width: 100%;
+  padding: 6px;
+  text-align: center;
+  font-size: 0.875rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fdf6e3;
+}
+
+.treasure-block .treasure-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.treasure-block .treasure-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.treasure-block .treasure-row input {
+  flex: 1;
+}
+
+.treasure-block .remove-btn {
+  background-color: #b91c1c;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  height: 100%;
+}
+
+.treasure-block .remove-btn:hover {
+  background-color: #991b1b;
+}
+
+.treasure-block .add-equipment-btn {
+  background-color: #4a5568;
+  color: white;
+  font-weight: bold;
+  width: 100%;
+}
+/* SPELLCASTING INFO BLOCK --------------------------------------------------- */
+.spellcasting-info-block {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 12px;
+  font-family: sans-serif;
+  margin-bottom: 1rem;
+}
+
+.spellcasting-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.spellcasting-row .field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.spellcasting-row .field.wide {
+  flex: 2;
+}
+
+.spellcasting-row .input {
+  width: 100%;
+  padding: 6px;
+  text-align: center;
+  font-size: 0.875rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fdf6e3;
+}
+
+.spellcasting-row label {
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-top: 4px;
+  text-align: center;
+}
+
+.compact-row {
+  display: flex;
+  gap: 8px;
+  flex: 2;
+}
+/* SPELLCASTING SECTION ------------------------------------------------------------ */
+.spellcasting-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+/* Individual spell level block */
+.spell-level-block {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 12px;
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Header: label and slots */
+.spell-level-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.spell-level-label {
+  font-size: 0.875rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.spell-slot-input {
+  width: 80px;
+  text-align: center;
+  padding: 6px;
+  font-size: 0.875rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fdf6e3;
+}
+
+/* Spell list textarea */
+.spell-textarea {
+  width: 100%;
+  height: 100px;
+  resize: vertical;
+  font-size: 0.875rem;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fdf6e3;
+}

@@ -1,0 +1,35 @@
+// CombatStats.jsx
+
+import React from 'react';
+
+const CombatStats = ({ values, onChange }) => {
+  const stats = [
+    { name: 'ac', label: 'Armor Class', placeholder: '' },
+    { name: 'initiative', label: 'Initiative', placeholder: '' },
+    { name: 'speed', label: 'Speed', placeholder: '' }
+  ];
+
+  return (
+    <div className="combat-stats-box">
+      <div className="combat-stats">
+        {stats.map(stat => (
+          <div key={stat.name} className="combat-stat-box">
+            <label htmlFor={stat.name} className="combat-label">
+              {stat.label}
+            </label>
+            <input
+              type="text"
+              name={stat.name}
+              placeholder={stat.placeholder}
+              className="combat-input"
+              value={values[stat.name] || ''}
+              onChange={onChange}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default CombatStats;

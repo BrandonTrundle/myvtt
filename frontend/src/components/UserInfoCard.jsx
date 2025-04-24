@@ -37,13 +37,20 @@ const UserInfoCard = ({ user, memberSince, hoursPlayed }) => {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await apiFetch('/api/user/avatar', {
+      const res = await apiFetch('/user/avatar', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text); // ✅ Only try if it's real JSON
+      } catch (err) {
+        console.warn("⚠️ Could not parse JSON. Response was:", text);
+        return; // Or handle fallback logic here
+      }
       if (res.ok && data.avatarUrl) {
         setAvatarUrl(`${API_BASE}${data.avatarUrl}`);
         await fetchUser();

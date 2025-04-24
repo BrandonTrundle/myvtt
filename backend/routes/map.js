@@ -1,10 +1,9 @@
-// 📂 backend/routes/map.js
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const { uploadMap } = require('../controllers/mapController');
-const requireAuth = require('../middleware/authMiddleware');
+const { protect } = require('../middleware/authMiddleware'); // ✅ FIXED
 
 // 🗺 Set up disk storage for uploaded maps
 const storage = multer.diskStorage({
@@ -20,6 +19,6 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // 🔐 Protect route and handle upload
-router.patch('/:id/map', requireAuth, upload.single('map'), uploadMap);
+router.patch('/:id/map', protect, upload.single('map'), uploadMap); // ✅ now valid
 
 module.exports = router;

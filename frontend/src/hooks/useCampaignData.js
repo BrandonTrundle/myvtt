@@ -14,7 +14,14 @@ export function useCampaignData(campaignId, setCampaign) {
           return;
         }
 
-        const data = await res.json();
+        const text = await res.text();
+        let data;
+        try {
+          data = JSON.parse(text); // ✅ Only try if it's real JSON
+        } catch (err) {
+          console.warn("⚠️ Could not parse JSON. Response was:", text);
+          return; // Or handle fallback logic here
+        }
         setCampaign(data);
       } catch (err) {
         console.error('❌ Error loading campaign:', err);

@@ -40,7 +40,14 @@ const CampaignCard = ({
         method: 'PATCH',
         body: formData,
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text); // ✅ Only try if it's real JSON
+      } catch (err) {
+        console.warn("⚠️ Could not parse JSON. Response was:", text);
+        return; // Or handle fallback logic here
+      }
       if (res.ok && data.imageUrl) {
         setImageUrl(`${API_BASE}${data.imageUrl}`);
       } else {
@@ -62,7 +69,7 @@ const CampaignCard = ({
 
     setSending(true);
     try {
-      const res = await apiFetch('/api/messages', {
+      const res = await apiFetch('/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -77,7 +84,14 @@ const CampaignCard = ({
         setIsInviting(false);
         setInviteTo('');
       } else {
-        const data = await res.json();
+        const text = await res.text();
+        let data;
+        try {
+          data = JSON.parse(text); // ✅ Only try if it's real JSON
+        } catch (err) {
+          console.warn("⚠️ Could not parse JSON. Response was:", text);
+          return; // Or handle fallback logic here
+        }
         alert(data.message || 'Failed to send invite.');
       }
     } catch (err) {

@@ -7,8 +7,15 @@ export function useMyCampaigns() {
 
   const fetchCampaigns = async () => {
     try {
-      const res = await apiFetch('/api/campaigns/mine');
-      const data = await res.json();
+      const res = await apiFetch('/campaigns/mine');
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text); // ✅ Only try if it's real JSON
+      } catch (err) {
+        console.warn("⚠️ Could not parse JSON. Response was:", text);
+        return; // Or handle fallback logic here
+      }
       if (res.ok) {
         setCampaigns(data);
       } else {

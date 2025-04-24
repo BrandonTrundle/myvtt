@@ -43,7 +43,7 @@ const Signup = () => {
     }
 
     try {
-      const res = await apiFetch('/api/auth/signup', {
+      const res = await apiFetch('/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -54,7 +54,14 @@ const Signup = () => {
         }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text); // ✅ Only try if it's real JSON
+      } catch (err) {
+        console.warn("⚠️ Could not parse JSON. Response was:", text);
+        return; // Or handle fallback logic here
+      }
 
       if (!res.ok) {
         setMessage(data.message || 'Signup failed');

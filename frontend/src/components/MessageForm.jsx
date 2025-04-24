@@ -22,12 +22,19 @@ const MessageForm = ({ onSuccess }) => {
     setStatus(null);
 
     try {
-      const res = await apiFetch('/api/messages', {
+      const res = await apiFetch('/messages', {
         method: 'POST',
         body: JSON.stringify(formData),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text); // ✅ Only try if it's real JSON
+      } catch (err) {
+        console.warn("⚠️ Could not parse JSON. Response was:", text);
+        return; // Or handle fallback logic here
+      }
 
       if (res.ok) {
         setStatus('✅ Message sent!');

@@ -3,7 +3,9 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs'); // ✅ You missed this import for mkdirSync
-const protect = require('../middleware/authMiddleware');
+const { protect } = require('../middleware/authMiddleware'); // ✅ now you're importing the actual function
+
+
 const {
   createCampaign,
   getMyCampaigns,

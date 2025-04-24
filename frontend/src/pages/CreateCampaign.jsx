@@ -26,12 +26,19 @@ const CreateCampaign = () => {
     }
 
     try {
-      const res = await apiFetch('/api/campaigns', {
+      const res = await apiFetch('/campaigns', {
         method: 'POST',
         body: JSON.stringify(form),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text); // ✅ Only try if it's real JSON
+      } catch (err) {
+        console.warn("⚠️ Could not parse JSON. Response was:", text);
+        return; // Or handle fallback logic here
+      }
       if (res.ok) {
         navigate('/campaigns'); // or to `/campaigns/${data._id}` if you build that later
       } else {

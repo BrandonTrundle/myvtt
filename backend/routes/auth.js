@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { signup, login, completeOnboarding } = require('../controllers/authController');
-const protect = require('../middleware/authMiddleware');
+const { protect } = require('../middleware/authMiddleware'); // ✅ fixes the import
+
 const User = require('../models/User'); // ✅ ADD THIS if not already there
 
 router.post('/signup', signup);

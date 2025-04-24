@@ -7,7 +7,7 @@ const {
   markMessageAsRead, // ✅ Add this to the import
   deleteMessage,
 } = require('../controllers/messageController');
-const protect = require('../middleware/authMiddleware');
+const { protect } = require('../middleware/authMiddleware'); // ✅ grabs the actual function
 
 // Message routes
 router.post('/', protect, sendMessage);
