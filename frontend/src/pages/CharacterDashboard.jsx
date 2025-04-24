@@ -1,13 +1,24 @@
-import React from 'react';
-import CharacterForm from '../components/CharacterForm';
+// CharacterDashboard.jsx
+
+import React, { useState } from 'react';
 import { useCharacters } from '../hooks/useCharacters';
-import { apiFetch } from '../utils/api';
-import { useState } from 'react';
 import CharacterSheetWindow from '../components/CharacterSheet/CharacterSheetWindow';
+import { apiFetch } from '../utils/api';
 
 const CharacterDashboard = () => {
   const { characters, setCharacters, fetchCharacters } = useCharacters();
   const [showSheet, setShowSheet] = useState(false);
+  const [activeCharacter, setActiveCharacter] = useState(null);
+
+  const handleCreateClick = () => {
+    const useWizard = window.confirm('Would you like to use the character creation wizard?');
+    if (useWizard) {
+      alert('Wizard not implemented yet. Please use manual mode.');
+    } else {
+      setActiveCharacter(null);
+      setShowSheet(true);
+    }
+  };
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this character?')) return;
@@ -28,21 +39,38 @@ const CharacterDashboard = () => {
     }
   };
 
+  const handleCharacterClick = (char) => {
+    setActiveCharacter(char);
+    setShowSheet(true);
+  };
+
+  const handleCharacterSaved = async () => {
+    const exit = window.confirm('Character saved! Exit character creation?');
+    if (exit) {
+      setShowSheet(false);
+      await fetchCharacters();
+    }
+  };
+
   return (
     <div className="bg-parchment min-h-screen px-6 py-10 text-arcanadeep">
       <h1 className="text-4xl font-bold mb-6">Your Characters</h1>
 
-      {/* Character sheet launcher */}
+      {/* Create Character Button */}
       <button
-        onClick={() => setShowSheet(true)}
+        onClick={handleCreateClick}
         className="mb-6 bg-arcanared text-white px-4 py-2 rounded hover:bg-arcanabrown"
       >
-        📜 Open Character Sheet
+        ➕ Create Character
       </button>
-      {showSheet && <CharacterSheetWindow onClose={() => setShowSheet(false)} />}
 
-      {/* Character form */}
-      <CharacterForm onCreate={fetchCharacters} />
+      {showSheet && (
+        <CharacterSheetWindow
+          onClose={() => setShowSheet(false)}
+          onSaveSuccess={handleCharacterSaved}
+          character={activeCharacter}
+        />
+      )}
 
       {/* Character list */}
       <div className="mt-10">
@@ -52,13 +80,20 @@ const CharacterDashboard = () => {
         ) : (
           <div className="grid gap-4">
             {characters.map((char) => (
-              <div key={char._id} className="bg-white p-4 rounded shadow border border-arcanabrown">
+              <div
+                key={char._id}
+                className="bg-white p-4 rounded shadow border border-arcanabrown cursor-pointer hover:bg-gray-100"
+                onClick={() => handleCharacterClick(char)}
+              >
                 <h3 className="text-lg font-bold">{char.name}</h3>
                 <p>Class: {char.class}</p>
                 <p>Race: {char.race}</p>
                 <p>Level: {char.level}</p>
                 <button
-                  onClick={() => handleDelete(char._id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(char._id);
+                  }}
                   className="mt-2 text-red-600 underline text-sm hover:text-arcanabrown"
                 >
                   Delete

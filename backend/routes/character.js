@@ -6,11 +6,20 @@ const Character = require('../models/Character');
 // POST /api/characters
 router.post('/', protect, async (req, res) => {
   try {
-    const newChar = await Character.create({ ...req.body, userId: req.user._id });
-    res.status(201).json(newChar);
+    const payload = {
+      ...req.body,
+      userId: req.user.id // ✅ inject userId explicitly
+    };
+
+    console.log('🧪 Final character payload:', payload);
+    console.log('🧪 Type of attacks:', typeof payload.attacks, ' | Instanceof:', Array.isArray(payload.attacks));
+    console.log('🧪 Sample attack:', payload.attacks[0]);
+    console.log('🧪 attacks field schema:', Character.schema.path('attacks'));
+    const character = await Character.create(payload);
+    res.status(201).json(character);
   } catch (err) {
     console.error('❌ Failed to create character:', err);
-    res.status(500).json({ message: 'Could not save character' });
+    res.status(400).json({ message: err.message });
   }
 });
 
