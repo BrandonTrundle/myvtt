@@ -15,7 +15,41 @@ const CharacterSheetWindow = ({ onClose, onSaveSuccess, character }) => {
     e.preventDefault();
 
     const payload = {
-      name: formData.charname || '',
+      // Physical Attributes
+      age: formData.age || '',
+      height: formData.height || '',
+      weight: formData.weight || '',
+      eyes: formData.eyes || '',
+      skin: formData.skin || '',
+      hair: formData.hair || '',
+
+      // Allies & Organizations
+      orgName: formData.orgName || '',
+      orgSymbolImage: formData.orgSymbolImage || '',
+      allies: formData.allies || '',
+
+      // Full Spellcasting Section (if implemented)
+      spells: formData.spells || [],
+      spellSlots_1: toNumber(formData.spellSlots_1),
+      spellSlots_2: toNumber(formData.spellSlots_2),
+      spellSlots_3: toNumber(formData.spellSlots_3),
+      spellSlots_4: toNumber(formData.spellSlots_4),
+      spellSlots_5: toNumber(formData.spellSlots_5),
+      spellSlots_6: toNumber(formData.spellSlots_6),
+      spellSlots_7: toNumber(formData.spellSlots_7),
+      spellSlots_8: toNumber(formData.spellSlots_8),
+      spellSlots_9: toNumber(formData.spellSlots_9),
+      spells_0: formData.spells_0 || '',
+      spells_1: formData.spells_1 || '',
+      spells_2: formData.spells_2 || '',
+      spells_3: formData.spells_3 || '',
+      spells_4: formData.spells_4 || '',
+      spells_5: formData.spells_5 || '',
+      spells_6: formData.spells_6 || '',
+      spells_7: formData.spells_7 || '',
+      spells_8: formData.spells_8 || '',
+      spells_9: formData.spells_9 || '',
+      charname: formData.charname || '',
       playername: formData.playername || '',
       class: formData.class || '',
       level: toNumber(formData.level),
@@ -23,7 +57,7 @@ const CharacterSheetWindow = ({ onClose, onSaveSuccess, character }) => {
       background: formData.background || '',
       alignment: formData.alignment || '',
       experiencepoints: toNumber(formData.experiencepoints),
-
+      
       appearance: formData.appearance || '',
       portraitImage: portraitImage || null,
 
@@ -95,7 +129,7 @@ const CharacterSheetWindow = ({ onClose, onSaveSuccess, character }) => {
     };
 
     console.log("🧪 Final payload to submit:", payload);
-    await submitCharacterForm(payload, onSaveSuccess);
+    await submitCharacterForm(payload, onSaveSuccess, character?._id || null);
   };
 
   useEffect(() => {

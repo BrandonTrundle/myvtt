@@ -114,11 +114,11 @@ const CharacterDashboard = () => {
           <div className="flex gap-4 items-center">
             <img
               src={char.portraitImage || '/default images/DefaultCharacter.png'}
-              alt={`${char.name}'s portrait`}
+              alt={`${char.charname}'s portrait`}
               className="w-16 h-16 object-cover rounded-full border border-arcanabrown"
             />
             <div>
-              <h3 className="text-lg font-bold">{char.name}</h3>
+            <h3 className="text-lg font-bold">{char.charname}</h3>
               <p>Class: {char.class}</p>
               <p>Race: {char.race}</p>
               <p>Level: {char.level}</p>

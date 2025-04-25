@@ -6,7 +6,8 @@ const { Schema } = mongoose;
 const CharacterSchema = new Schema(
   {
     // Core identity
-    name: { type: String }, // no longer required
+    name: { type: String }, // optional legacy field
+    charname: { type: String },
     playername: String,
     class: String,
     level: Number,

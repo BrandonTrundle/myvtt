@@ -67,4 +67,21 @@ router.get('/:id', protect, async (req, res) => {
   }
 });
 
+router.put('/:id', protect, async (req, res) => {
+  try {
+    const updated = await Character.findOneAndUpdate(
+      { _id: req.params.id, creator: req.user._id },
+      req.body,
+      { new: true, runValidators: true }
+    );
+
+    if (!updated) return res.status(404).json({ message: 'Character not found.' });
+
+    res.json(updated);
+  } catch (err) {
+    console.error('❌ Error updating character:', err);
+    res.status(500).json({ message: 'Failed to update character.' });
+  }
+});
+
 module.exports = router;

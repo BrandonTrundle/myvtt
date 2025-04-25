@@ -1,7 +1,7 @@
 const SpellLevelBlock = ({ level, values, onChange }) => {
   const label = level === 0 ? 'Cantrips' : `Level ${level}`;
-  const slotsName = `spellSlots-${level}`;
-  const spellsName = `spells-${level}`;
+  const slotsName = `spellSlots_${level}`;
+  const spellsName = `spells_${level}`;
 
   return (
     <div className="spell-level-block">

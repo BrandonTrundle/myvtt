@@ -1,17 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 
 const AlliesAndOrganizations = ({ values, onChange }) => {
-  const [symbolImage, setSymbolImage] = useState(values.orgSymbolImage || '');
-
-  useEffect(() => {
-    onChange({ target: { name: 'orgSymbolImage', value: symbolImage } });
-  }, [symbolImage, onChange]);
+  const symbolImage = values.orgSymbolImage || '';
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => setSymbolImage(reader.result);
+      reader.onloadend = () => {
+        const result = reader.result;
+        // 👇 Immediately update formData
+        onChange({ target: { name: 'orgSymbolImage', value: result } });
+      };
       reader.readAsDataURL(file);
     }
   };
@@ -25,7 +25,7 @@ const AlliesAndOrganizations = ({ values, onChange }) => {
         className="allies-textarea"
         placeholder="Details about allies, factions, and groups your character is affiliated with..."
         value={values.allies || ''}
-        onChange={onChange}
+        onChange={(e) => onChange(e)}
       />
 
       <div className="org-symbol-row">
@@ -37,7 +37,7 @@ const AlliesAndOrganizations = ({ values, onChange }) => {
             className="org-input"
             placeholder="Organization Name"
             value={values.orgName || ''}
-            onChange={onChange}
+            onChange={(e) => onChange(e)}
           />
         </div>
         <div className="field">
@@ -55,7 +55,7 @@ const AlliesAndOrganizations = ({ values, onChange }) => {
             id="orgSymbolUpload"
             onChange={handleImageUpload}
           />
-          <input type="hidden" name="orgSymbolImage" value={symbolImage || ''} />
+          <input type="hidden" name="orgSymbolImage" value={symbolImage} />
         </div>
       </div>
     </div>

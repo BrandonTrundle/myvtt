@@ -28,10 +28,10 @@ const CharacterSheetForm = ({ onSubmit, character }) => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const [formData, setFormData] = useState(() => {
-    // Merge flat values from character (if any), excluding arrays and nested objects
     const safeCharacter = character || {};
-    const flattened = {};
+    const base = {};
   
+    // Flatten primitives
     Object.entries(safeCharacter).forEach(([key, val]) => {
       if (
         val === null ||
@@ -39,22 +39,24 @@ const CharacterSheetForm = ({ onSubmit, character }) => {
         typeof val === 'number' ||
         typeof val === 'boolean'
       ) {
-        flattened[key] = val;
+        base[key] = val;
       }
     });
   
-    const base = flattened;
-
-    // Add array-based defaults if character exists
+    // Preserve known arrays and objects
     if (safeCharacter.skills) base.skills = safeCharacter.skills;
     if (safeCharacter.attacks) base.attacks = safeCharacter.attacks;
     if (safeCharacter.equipment) base.equipment = safeCharacter.equipment;
     if (safeCharacter.treasure) base.treasure = safeCharacter.treasure;
     if (safeCharacter.coins) base.coins = safeCharacter.coins;
     if (safeCharacter.spells) base.spells = safeCharacter.spells;
-
+    if (!base.allies) base.allies = '';
+    if (!base.orgName) base.orgName = '';
+    if (!base.orgSymbolImage) base.orgSymbolImage = '';
+  
     return base;
   });
+  
 
   useEffect(() => {
     if (character) {
