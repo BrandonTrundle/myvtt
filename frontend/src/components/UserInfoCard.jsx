@@ -1,10 +1,4 @@
-import React, {
-  useRef,
-  useState,
-  useEffect,
-  useContext,
-  useCallback,
-} from 'react';
+import React, { useRef, useState, useEffect, useContext, useCallback } from 'react';
 import { Bell, Mail } from 'lucide-react';
 import { UserContext } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
@@ -15,52 +9,52 @@ const UserInfoCard = ({ user, memberSince, hoursPlayed }) => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const { fetchUser } = useContext(UserContext);
-
+  const BASE_URL = API_BASE.replace('/api', '');
   const [avatarUrl, setAvatarUrl] = useState('/defaultav.png');
   const [hasNewNotifications, setHasNewNotifications] = useState(true);
   const hasNewMessages = useUnreadMessages(); // 🔁 Refactored
 
   useEffect(() => {
     if (user.avatarUrl) {
-      setAvatarUrl(`${API_BASE}${user.avatarUrl}`);
+      setAvatarUrl(`${BASE_URL}${user.avatarUrl}`);
+      console.log("✅ Avatar URL updated:", `${BASE_URL}${user.avatarUrl}`);
     }
   }, [user]);
+  
 
-  const handleAvatarClick = () => fileInputRef.current?.click();
+  const handleAvatarClick = () => {
+    console.log("🖼️ Avatar clicked, opening file input...");
+    fileInputRef.current?.click();
+  };
 
   const handleFileChange = useCallback(async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
+  
+    console.log("📤 Avatar file selected:", file.name);
+  
     const formData = new FormData();
     formData.append('avatar', file);
-
+  
     try {
-      const token = localStorage.getItem('token');
-      const res = await apiFetch('/user/avatar', {
+      const data = await apiFetch('/user/avatar', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
-
-      const text = await res.text();
-      let data;
-      try {
-        data = JSON.parse(text); // ✅ Only try if it's real JSON
-      } catch (err) {
-        console.warn("⚠️ Could not parse JSON. Response was:", text);
-        return; // Or handle fallback logic here
-      }
-      if (res.ok && data.avatarUrl) {
-        setAvatarUrl(`${API_BASE}${data.avatarUrl}`);
+  
+      if (data?.avatarUrl) {
+        console.log("✅ Avatar uploaded successfully. New URL:", `${API_BASE}${data.avatarUrl}`);
+        setAvatarUrl(`${BASE_URL}${data.avatarUrl}`);
         await fetchUser();
       } else {
-        alert(data.message || 'Failed to upload avatar');
+        alert(data?.message || 'Failed to upload avatar');
       }
     } catch (err) {
-      console.error('Upload error', err);
+      console.error('❌ Upload error:', err);
+      alert('Server error during avatar upload.');
     }
   }, [fetchUser]);
+  
 
   return (
     <div className="flex items-center bg-white p-4 rounded border border-arcanabrown shadow-md text-sm text-arcanadeep max-w-md gap-4 relative">
@@ -101,6 +95,7 @@ const UserInfoCard = ({ user, memberSince, hoursPlayed }) => {
           <div
             className="flex items-center gap-1 cursor-pointer"
             onClick={() => {
+              console.log("🔔 Notifications clicked");
               alert('Notifications panel coming soon!');
               setHasNewNotifications(false);
             }}
@@ -111,7 +106,10 @@ const UserInfoCard = ({ user, memberSince, hoursPlayed }) => {
 
           <div
             className="flex items-center gap-1 cursor-pointer"
-            onClick={() => navigate('/messages')}
+            onClick={() => {
+              console.log("📨 Navigating to messages...");
+              navigate('/messages');
+            }}
           >
             <Mail className={`w-5 h-5 ${hasNewMessages ? 'text-yellow-500' : 'text-gray-400'}`} />
             <span className="text-sm">Messages</span>

@@ -1,28 +1,32 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Import navigate hook
 import { apiFetch } from '../utils/api';
 import CampaignCard from '../components/CampaignCard';
 import { useMyCampaigns } from '../hooks/useMyCampaigns';
 
 const CampaignList = () => {
+  const navigate = useNavigate(); // Create navigate function
   const { campaigns, setCampaigns, fetchCampaigns } = useMyCampaigns();
   const [copiedCode, setCopiedCode] = useState(null);
   const [joinCode, setJoinCode] = useState('');
   const [joinLoading, setJoinLoading] = useState(false);
 
-  const handleDelete = async (id) => {
-    const confirmDelete = window.confirm('Delete this campaign?');
-    if (!confirmDelete) return;
-
+  const handleDeleteCampaign = async (campaignId) => {
+    if (!window.confirm('Are you sure you want to delete this campaign?')) return;
+  
     try {
-      const res = await apiFetch(`/api/campaigns/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        setCampaigns((prev) => prev.filter((c) => c._id !== id));
-      } else {
-        alert('Failed to delete.');
-      }
+      await apiFetch(`/campaigns/${campaignId}`, { method: 'DELETE' });
+      setCampaigns((prev) => prev.filter((c) => c._id !== campaignId));
+      console.log("✅ Campaign deleted:", campaignId);
     } catch (err) {
       console.error('❌ Failed to delete campaign:', err);
+      alert(err.message || 'Failed to delete campaign.');
     }
+  };
+
+  const handleSendInvite = (campaign) => {
+    console.log("📤 Sending invite for campaign:", campaign._id);
+    alert(`TODO: Custom invite modal — already functional inline.`);
   };
 
   const handleCopyCode = (code) => {
@@ -31,34 +35,26 @@ const CampaignList = () => {
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
-  const handleSendInvite = (campaign) => {
-    alert(`TODO: Custom invite modal — already functional inline.`);
-  };
-
   const handleJoin = async () => {
     if (!joinCode.trim()) return;
 
     setJoinLoading(true);
+    console.log("📡 Attempting to join campaign with code:", joinCode);
     try {
-      const res = await apiFetch(`/api/campaigns/join/${joinCode.trim()}`, {
+      const res = await apiFetch(`/campaigns/join/${joinCode.trim()}`, {
         method: 'POST',
       });
 
-      const text = await res.text();
-      let data;
-      try {
-        data = JSON.parse(text); // ✅ Only try if it's real JSON
-      } catch (err) {
-        console.warn("⚠️ Could not parse JSON. Response was:", text);
-        return; // Or handle fallback logic here
-      }
+      const data = res;
 
-      if (res.ok) {
+      if (data && data._id) {
         alert('🎉 Successfully joined the campaign!');
         setJoinCode('');
         fetchCampaigns(); // Refresh list
+        console.log("✅ Successfully joined the campaign:", joinCode);
       } else {
         alert(data.message || 'Failed to join.');
+        console.warn("⚠️ Failed to join campaign:", data.message);
       }
     } catch (err) {
       console.error('❌ Error joining campaign:', err);
@@ -68,9 +64,23 @@ const CampaignList = () => {
     }
   };
 
+  const handleCreateNewCampaign = () => {
+    navigate('/create-campaign'); // Navigate to the create new campaign page
+  };
+
   return (
     <div className="bg-parchment min-h-screen p-8 text-arcanadeep">
       <h1 className="text-3xl font-bold mb-6">🎲 My Campaigns</h1>
+
+      {/* Create New Campaign Button */}
+      <div className="mb-6 max-w-md bg-white p-4 rounded shadow border border-arcanabrown">
+        <button
+          onClick={handleCreateNewCampaign}
+          className="bg-arcanared text-white px-4 py-2 rounded hover:bg-arcanabrown transition"
+        >
+          + Create New Campaign
+        </button>
+      </div>
 
       {/* Join Campaign Box */}
       <div className="mb-6 max-w-md bg-white p-4 rounded shadow border border-arcanabrown">
@@ -102,7 +112,7 @@ const CampaignList = () => {
             <CampaignCard
               key={campaign._id}
               campaign={campaign}
-              onDelete={handleDelete}
+              onDelete={handleDeleteCampaign}
               onCopyCode={handleCopyCode}
               onSendInvite={handleSendInvite}
               isCopied={copiedCode === campaign.inviteCode}

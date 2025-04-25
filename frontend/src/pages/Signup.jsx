@@ -1,13 +1,11 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
 import { UserContext } from '../context/UserContext';
-import { apiFetch } from '../utils/api'; // adjust path as needed
-
+import { apiFetch } from '../utils/api';
 
 const Signup = () => {
   const navigate = useNavigate();
-  const { fetchUser } = useContext(UserContext);
+  const { fetchUser, user } = useContext(UserContext);
 
   const [form, setForm] = useState({
     firstName: '',
@@ -23,6 +21,7 @@ const Signup = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    console.log(`📝 Form field change: ${name} = ${type === 'checkbox' ? checked : value}`);
     setForm({
       ...form,
       [name]: type === 'checkbox' ? checked : value,
@@ -31,19 +30,23 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("📡 Submitting form:", form);
 
     if (form.password !== form.confirmPassword) {
       setMessage('Passwords do not match!');
+      console.warn('⚠️ Passwords do not match');
       return;
     }
 
     if (!form.terms) {
       setMessage('You must agree to the terms of service.');
+      console.warn('⚠️ Terms not agreed to');
       return;
     }
 
     try {
-      const res = await apiFetch('/auth/signup', {
+      console.log('📡 Sending signup request...');
+      const data = await apiFetch('/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -54,32 +57,25 @@ const Signup = () => {
         }),
       });
 
-      const text = await res.text();
-      let data;
-      try {
-        data = JSON.parse(text); // ✅ Only try if it's real JSON
-      } catch (err) {
-        console.warn("⚠️ Could not parse JSON. Response was:", text);
-        return; // Or handle fallback logic here
-      }
-
-      if (!res.ok) {
+      if (!data || data.message) {
         setMessage(data.message || 'Signup failed');
+        console.warn('⚠️ Signup failed:', data.message);
       } else {
+        console.log("✅ Signup successful, storing token...");
         localStorage.setItem('token', data.token);
 
-        // Update user context
         await fetchUser();
 
-        const decoded = jwtDecode(data.token);
-        if (decoded.onboardingComplete) {
+        if (user?.onboardingComplete) {
+          console.log("📡 Redirecting to /user-welcome");
           navigate('/user-welcome');
         } else {
+          console.log("📡 Redirecting to /welcome");
           navigate('/welcome');
         }
       }
     } catch (err) {
-      console.error(err);
+      console.error('❌ Create error:', err);
       setMessage('Something went wrong');
     }
   };

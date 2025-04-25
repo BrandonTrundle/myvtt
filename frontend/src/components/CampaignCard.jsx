@@ -1,25 +1,38 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiFetch, API_BASE } from '../utils/api';
+import { apiFetch, API_BASE, STATIC_BASE } from '../utils/api';
 import { Trash2 } from 'lucide-react';
+import { useUser } from '../context/UserContext';
 
-const CampaignCard = ({
-  campaign,
-  onCopyCode,
-  onDelete,
-  onSendInvite,
-  isCopied,
-  isGM,
-}) => {
+const CampaignCard = ({ campaign, onCopyCode, onDelete, onSendInvite, isCopied }) => {
   const navigate = useNavigate();
+  const { user: currentUser } = useUser();
+
+  const isGM = campaign?.gm?._id === currentUser?._id;
+console.log('🎭 isGM:', isGM);
+console.log('👤 currentUser._id:', currentUser?._id);
+console.log('🎲 campaign.gm:', campaign.gm);
+console.log('🧑‍🤝‍🧑 campaign.players:', campaign.players);
+
   const fileInputRef = useRef(null);
-  const [imageUrl, setImageUrl] = useState(
-    campaign.imageUrl ? `${API_BASE}${campaign.imageUrl}` : '/default-campaign.jpg'
-  );
+  const [imageUrl, setImageUrl] = useState('/default-campaign.jpg');
   const [uploading, setUploading] = useState(false);
   const [isInviting, setIsInviting] = useState(false);
   const [inviteTo, setInviteTo] = useState('');
   const [sending, setSending] = useState(false);
+  const handleDelete = () => {
+    if (onDelete) {
+      onDelete(campaign._id);
+    }
+  };
+
+  useEffect(() => {
+    if (campaign?.imageUrl) {
+      setImageUrl(`${STATIC_BASE}${campaign.imageUrl}`);
+    } else {
+      setImageUrl('default images/default-campaign.jpg');
+    }
+  }, [campaign]);
 
   const handleImageClick = () => {
     if (isGM && fileInputRef.current) {
@@ -36,26 +49,17 @@ const CampaignCard = ({
 
     try {
       setUploading(true);
-      const res = await apiFetch(`/api/campaigns/${campaign._id}/image`, {
+      const data = await apiFetch(`/campaigns/${campaign._id}/image`, {
         method: 'PATCH',
         body: formData,
       });
-      const text = await res.text();
-      let data;
-      try {
-        data = JSON.parse(text); // ✅ Only try if it's real JSON
-      } catch (err) {
-        console.warn("⚠️ Could not parse JSON. Response was:", text);
-        return; // Or handle fallback logic here
-      }
-      if (res.ok && data.imageUrl) {
-        setImageUrl(`${API_BASE}${data.imageUrl}`);
-      } else {
-        alert(data.message || 'Failed to upload image.');
+
+      if (data?.imageUrl) {
+        setImageUrl(`${STATIC_BASE}${data.imageUrl}`);
       }
     } catch (err) {
       console.error('❌ Image upload failed:', err);
-      alert('Error uploading image.');
+      alert(err.message || 'Error uploading image.');
     } finally {
       setUploading(false);
     }
@@ -69,9 +73,8 @@ const CampaignCard = ({
 
     setSending(true);
     try {
-      const res = await apiFetch('/messages', {
+      await apiFetch('/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           toUsername: inviteTo.trim(),
           subject: `You're invited to join: ${campaign.title}`,
@@ -79,24 +82,12 @@ const CampaignCard = ({
         }),
       });
 
-      if (res.ok) {
-        alert('Invite sent!');
-        setIsInviting(false);
-        setInviteTo('');
-      } else {
-        const text = await res.text();
-        let data;
-        try {
-          data = JSON.parse(text); // ✅ Only try if it's real JSON
-        } catch (err) {
-          console.warn("⚠️ Could not parse JSON. Response was:", text);
-          return; // Or handle fallback logic here
-        }
-        alert(data.message || 'Failed to send invite.');
-      }
+      alert('Invite sent!');
+      setIsInviting(false);
+      setInviteTo('');
     } catch (err) {
       console.error('❌ Failed to send invite:', err);
-      alert('Error sending invite.');
+      alert(err.message || 'Error sending invite.');
     } finally {
       setSending(false);
     }
@@ -113,9 +104,7 @@ const CampaignCard = ({
         <img
           src={imageUrl}
           alt="Campaign"
-          className={`w-full h-40 object-cover rounded cursor-pointer border ${
-            isGM ? 'hover:opacity-80 transition' : ''
-          }`}
+          className={`w-full h-40 object-cover rounded cursor-pointer border ${isGM ? 'hover:opacity-80 transition' : ''}`}
           onClick={handleImageClick}
         />
         {uploading && (
@@ -131,24 +120,35 @@ const CampaignCard = ({
           onChange={handleImageChange}
         />
       </div>
-
+  
+      {/* Campaign Info */}
       <h2 className="text-xl font-bold">{campaign.title}</h2>
       <p className="text-sm text-gray-700">System: {campaign.system}</p>
       {campaign.module && <p className="text-sm text-gray-700">Module: {campaign.module}</p>}
       <p className="text-sm text-gray-500 mt-1">
         Created: {new Date(campaign.createdAt).toLocaleDateString()}
       </p>
-
-      <span className="inline-block mt-2 px-2 py-1 text-xs bg-arcanared text-white rounded">
-        {isGM ? 'Game Master' : 'Player'}
-      </span>
-
-      {/* Avatars */}
+  
+      {/* Role Badge */}
+      {(() => {
+        const isPlayer = campaign.players?.some((p) => String(p._id || p) === currentUser._id);
+        if (isGM || isPlayer) {
+          return (
+            <span className="inline-block mt-2 px-2 py-1 text-xs bg-arcanared text-white rounded">
+              {isGM ? 'Game Master' : 'Player'}
+            </span>
+          );
+        }
+        return null;
+      })()}
+  
+      {/* Avatar Row */}
       <div className="flex items-center flex-wrap gap-2 mt-4">
-        {!isGM && campaign.gm && (
+        {/* GM Avatar (if not GM yourself) */}
+        {campaign.gm && (
           <div className="relative group">
             <img
-              src={campaign.gm.avatarUrl ? `${API_BASE}${campaign.gm.avatarUrl}` : '/defaultav.png'}
+              src={campaign.gm.avatarUrl ? `${STATIC_BASE}${campaign.gm.avatarUrl}` : '/defaultav.png'}
               alt="GM"
               className="w-10 h-10 rounded-full border"
             />
@@ -157,10 +157,12 @@ const CampaignCard = ({
             </div>
           </div>
         )}
+  
+        {/* Players */}
         {campaign.players?.map((player) => (
           <div className="relative group" key={player._id}>
             <img
-              src={player.avatarUrl ? `${API_BASE}${player.avatarUrl}` : '/defaultav.png'}
+              src={player.avatarUrl ? `${STATIC_BASE}${player.avatarUrl}` : '/defaultav.png'}
               alt="Player"
               className="w-10 h-10 rounded-full border"
             />
@@ -170,8 +172,8 @@ const CampaignCard = ({
           </div>
         ))}
       </div>
-
-      {/* GM / Player Controls */}
+  
+      {/* Controls */}
       <div className="mt-4 space-y-2 text-sm text-gray-700">
         {isGM ? (
           <>
@@ -185,14 +187,14 @@ const CampaignCard = ({
                 {isCopied ? 'Copied!' : 'Copy'}
               </button>
             </div>
-
+  
             <button
               onClick={() => setIsInviting((prev) => !prev)}
               className="text-xs text-green-700 underline hover:text-green-900"
             >
               {isInviting ? 'Cancel Invite' : 'Send Invite'}
             </button>
-
+  
             {isInviting && (
               <div className="mt-2 space-y-2">
                 <input
@@ -211,21 +213,23 @@ const CampaignCard = ({
                 </button>
               </div>
             )}
-
+  
             <button
               onClick={handleEnterTable}
               className="mt-4 text-sm bg-arcanared text-white px-3 py-2 rounded hover:bg-arcanabrown transition w-full"
             >
               🚀 Launch Campaign
             </button>
-
-            <button
-              onClick={() => onDelete(campaign._id)}
-              className="text-sm text-red-600 mt-2 hover:underline"
-            >
-              <Trash2 className="inline-block w-4 h-4 mr-1" />
-              Delete Campaign
-            </button>
+  
+            {isGM && (
+              <button
+                onClick={handleDelete}
+                className="text-sm text-red-600 mt-2 hover:underline"
+              >
+                <Trash2 className="inline-block w-4 h-4 mr-1" />
+                Delete Campaign
+              </button>
+            )}
           </>
         ) : (
           <button
@@ -239,5 +243,4 @@ const CampaignCard = ({
     </div>
   );
 };
-
 export default CampaignCard;

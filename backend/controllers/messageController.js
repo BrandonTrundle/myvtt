@@ -1,128 +1,64 @@
+const express = require('express');
+const router = express.Router();
 const Message = require('../models/Message');
-const User = require('../models/User');
+const { protect } = require('../middleware/authMiddleware');
 
+// Get all messages for a campaign
+router.get('/:campaignId', protect, async (req, res) => {
+  console.log(`📨 GET /:campaignId hit for campaign ID: ${req.params.campaignId}`);
 
-const sendMessage = async (req, res) => {
   try {
-    const { toUsername, subject, body } = req.body;
+    const messages = await Message.find({ campaignId: req.params.campaignId }).sort({ createdAt: 1 });
+    console.log("✅ Messages fetched for campaign:", messages.length);
+    res.json(messages);
+  } catch (err) {
+    console.error('❌ Error fetching messages:', err);
+    res.status(500).json({ message: 'Failed to fetch messages' });
+  }
+});
 
-    if (!toUsername || !subject || !body) {
-      return res.status(400).json({ message: 'Missing required fields.' });
-    }
+// Send a new message
+router.post('/:campaignId', protect, async (req, res) => {
+  console.log(`📨 POST /:campaignId hit to send a new message for campaign ID: ${req.params.campaignId}`);
 
-    // Find the recipient by username
-    const recipient = await User.findOne({ displayName: toUsername });
-
-    if (!recipient) {
-      return res.status(404).json({ message: 'Recipient not found.' });
-    }
-
-    const message = new Message({
+  try {
+    const newMessage = new Message({
+      campaignId: req.params.campaignId,
       sender: req.user._id,
-      recipient: recipient._id,
-      subject,
-      body,
+      content: req.body.content,
     });
 
-    await message.save();
-
-    res.status(201).json({ message: 'Message sent successfully.' });
+    await newMessage.save();
+    console.log("✅ New message sent by user:", req.user._id);
+    res.status(201).json(newMessage);
   } catch (err) {
-    console.error('❌ Error sending message:', err);
-    res.status(500).json({ message: 'Server error while sending message.' });
+    console.error('❌ Error creating message:', err);
+    res.status(400).json({ message: 'Failed to create message' });
   }
-};
+});
 
-const getUnreadMessagesCount = async (req, res) => {
-    try {
-      const userId = req.user._id;
-  
-      const count = await Message.countDocuments({
-        recipient: userId,
-        isRead: false,
-      });
-  
-      res.json({ unread: count });
-    } catch (err) {
-      console.error('❌ Error checking unread messages:', err);
-      res.status(500).json({ message: 'Failed to check unread messages.' });
-    }
-  };
+// Mark message as read
+router.patch('/:messageId/read', protect, async (req, res) => {
+  console.log(`📨 PATCH /:messageId/read hit to mark message ID: ${req.params.messageId} as read`);
 
-const getMessages = async (req, res) => {
   try {
-    const messages = await Message.find({ recipient: req.user._id })
-      .sort({ sentAt: -1 }) // newest first
-      .populate('sender', 'displayName'); // only get sender's name
+    const message = await Message.findByIdAndUpdate(
+      req.params.messageId,
+      { $addToSet: { readBy: req.user._id } },
+      { new: true }
+    );
 
-    const formatted = messages.map((msg) => ({
-      _id: msg._id,
-      senderName: msg.sender.displayName || 'Unknown',
-      subject: msg.subject,
-      body: msg.body,
-      isRead: msg.isRead,
-      sentAt: msg.sentAt,
-    }));
+    if (!message) {
+      console.log("❌ Message not found:", req.params.messageId);
+      return res.status(404).json({ message: 'Message not found' });
+    }
 
-    res.json(formatted);
+    console.log("✅ Message marked as read by user:", req.user._id);
+    res.json(message);
   } catch (err) {
-    console.error('❌ Error getting messages:', err);
-    res.status(500).json({ message: 'Failed to fetch messages.' });
+    console.error('❌ Error marking message as read:', err);
+    res.status(400).json({ message: 'Failed to update message' });
   }
-};
+});
 
-const markMessageAsRead = async (req, res) => {
-    try {
-      const { id } = req.params;
-  
-      const message = await Message.findById(id);
-  
-      if (!message) {
-        return res.status(404).json({ message: 'Message not found.' });
-      }
-  
-      if (message.recipient.toString() !== req.user._id.toString()) {
-        return res.status(403).json({ message: 'Not authorized to mark this message.' });
-      }
-  
-      if (!message.isRead) {
-        message.isRead = true;
-        await message.save();
-      }
-  
-      res.status(200).json({ message: 'Message marked as read.' });
-    } catch (err) {
-      console.error('❌ Error marking message as read:', err);
-      res.status(500).json({ message: 'Failed to update message.' });
-    }
-  };
-
-  const deleteMessage = async (req, res) => {
-    try {
-      const message = await Message.findById(req.params.id);
-  
-      if (!message) {
-        return res.status(404).json({ message: 'Message not found.' });
-      }
-  
-      if (message.recipient.toString() !== req.user._id.toString()) {
-        return res.status(403).json({ message: 'Not authorized to delete this message.' });
-      }
-  
-      await message.deleteOne();
-      res.status(200).json({ message: 'Message deleted.' });
-    } catch (err) {
-      console.error('❌ Error deleting message:', err);
-      res.status(500).json({ message: 'Failed to delete message.' });
-    }
-  };
-
-
-
-module.exports = {
-  sendMessage,
-  getUnreadMessagesCount,
-  getMessages,
-  markMessageAsRead,
-  deleteMessage,
-};
+module.exports = router;

@@ -1,4 +1,3 @@
-// 📂 frontend/context/SocketContext.js
 import React, {
   createContext,
   useContext,
@@ -37,7 +36,13 @@ export const SocketProvider = ({ children }) => {
       setIsConnected(false);
     });
 
+    // Listen to other socket events as needed
+    socket.on('map-uploaded', (data) => {
+      console.log('📥 Received map upload event:', data);
+    });
+
     return () => {
+      console.log('🧹 Cleaning up socket connection');
       socket.disconnect();
     };
   }, []);

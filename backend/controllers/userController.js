@@ -1,48 +1,51 @@
+// controllers/userController.js
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 const User = require('../models/User');
 
-// Storage config
+// Setup multer storage for avatars
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'uploads/avatars'),
-  filename: (req, file, cb) => {
+  destination: function (req, file, cb) {
+    const dir = path.join(__dirname, '../uploads/avatars');
+    fs.mkdirSync(dir, { recursive: true });
+    console.log(`✅ Avatar upload directory ensured: ${dir}`);
+    cb(null, dir);
+  },
+  filename: function (req, file, cb) {
     const ext = path.extname(file.originalname);
-    cb(null, `${req.user._id}${ext}`);
+    const filename = `${req.user._id}-avatar${ext}`;
+    console.log("📄 Avatar filename generated:", filename);
+    cb(null, filename);
   }
 });
 
 const upload = multer({ storage });
 
-// Middleware to use in route
-exports.avatarUploadMiddleware = upload.single('avatar');
+// Middleware to handle avatar uploads
+const avatarUploadMiddleware = upload.single('avatar');
 
-// POST /api/user/avatar
-exports.uploadAvatar = async (req, res) => {
+// Controller to save avatar to user profile
+const uploadAvatar = async (req, res) => {
   try {
     if (!req.file) {
-      console.warn('⚠️ No file uploaded');
+      console.log("❌ No file uploaded");
       return res.status(400).json({ message: 'No file uploaded' });
     }
 
-    console.log('📦 File received:', req.file);
-
     const avatarPath = `/uploads/avatars/${req.file.filename}`;
+    console.log("✅ Avatar uploaded, updating user record:", avatarPath);
 
-    const user = await User.findByIdAndUpdate(
-      req.user._id,
-      { avatarUrl: avatarPath },
-      { new: true }
-    );
+    await User.findByIdAndUpdate(req.user._id, { avatarUrl: avatarPath });
 
-    if (!user) {
-      console.error('❌ User not found');
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    console.log('✅ Avatar updated:', user.avatarUrl);
-    res.json({ avatarUrl: user.avatarUrl });
+    res.status(200).json({ avatarUrl: avatarPath });
   } catch (err) {
-    console.error('❌ Upload error:', err);
-    res.status(500).json({ message: 'Failed to upload avatar' });
+    console.error('❌ Error uploading avatar:', err);
+    res.status(500).json({ message: 'Server error during avatar upload' });
   }
+};
+
+module.exports = {
+  avatarUploadMiddleware,
+  uploadAvatar,
 };

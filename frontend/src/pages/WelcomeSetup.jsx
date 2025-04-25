@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../utils/api';
-import { UserContext } from '../context/UserContext'; // ✅ hook into user context
+import { UserContext } from '../context/UserContext';
 
 const WelcomeSetup = () => {
   const [step, setStep] = useState(0);
@@ -15,69 +15,64 @@ const WelcomeSetup = () => {
   });
 
   const navigate = useNavigate();
-  const { setUser } = useContext(UserContext); // ✅ pull from context
+  const { setUser } = useContext(UserContext);
 
   useEffect(() => {
     const checkOnboarding = async () => {
+      console.log("📡 Checking user onboarding status...");
       try {
-        const res = await apiFetch('/auth/me');
-        const text = await res.text();
-        console.log("📩 Raw user info:", text);
-
-        const data = JSON.parse(text);
-        if (res.ok) {
-          setUser(data); // ✅ now valid
-        } else {
-          console.warn("⚠️ Server returned error:", data);
+        const data = await apiFetch('/auth/me');
+        if (data) {
+          setUser(data);
+          console.log("✅ User data fetched:", data);
         }
       } catch (err) {
         console.error("❌ Could not fetch user info:", err);
       }
     };
+
     checkOnboarding();
-  }, [navigate, setUser]);
+  }, [setUser]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     if (type === 'checkbox') {
       setForm((prev) => {
-        const selected = new Set(prev.playPreferences);
-        checked ? selected.add(value) : selected.delete(value);
-        return { ...prev, playPreferences: Array.from(selected) };
+        const updated = new Set(prev.playPreferences);
+        checked ? updated.add(value) : updated.delete(value);
+        return { ...prev, playPreferences: Array.from(updated) };
       });
     } else {
-      setForm({ ...form, [name]: value });
+      setForm((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleSubmit = async () => {
+    console.log("📡 Submitting onboarding data:", form);
+    try {
+      const result = await apiFetch('/auth/onboarding', {
+        method: 'PATCH',
+        body: JSON.stringify({ ...form, onboardingComplete: true }),
+      });
+
+      if (result && !result.message) {
+        console.log("✅ Onboarding complete, navigating to /user-welcome");
+        navigate('/user-welcome');
+      } else {
+        console.warn("⚠️ Server returned error:", result?.message);
+        alert(result?.message || 'Something went wrong.');
+      }
+    } catch (err) {
+      console.error("❌ Server error during onboarding submission:", err);
+      alert('Server error.');
     }
   };
 
   const nextStep = () => setStep((prev) => prev + 1);
   const prevStep = () => setStep((prev) => prev - 1);
 
-  const handleSubmit = async () => {
-    try {
-      const res = await apiFetch('/auth/onboarding', {
-        method: 'PATCH',
-        body: JSON.stringify({ ...form, onboardingComplete: true }),
-      });
-      const text = await res.text();
-      let data;
-      try {
-        data = JSON.parse(text); // ✅ Only try if it's real JSON
-      } catch (err) {
-        console.warn("⚠️ Could not parse JSON. Response was:", text);
-        return; // Or handle fallback logic here
-      }
-      if (res.ok) {
-        navigate('/user-welcome');
-      } else {
-        alert(data.message || 'Something went wrong.');
-      }
-    } catch (err) {
-      alert('Server error.');
-    }
-  };
-
   const StepDisplay = () => {
+    console.log(`📄 Displaying step ${step}`);
     switch (step) {
       case 0:
         return (
@@ -99,8 +94,8 @@ const WelcomeSetup = () => {
               <option>Spanish</option>
             </select>
             <div className="mt-6 flex justify-between">
-              <button onClick={prevStep}>Back</button>
-              <button onClick={nextStep}>Next</button>
+              <button type="button" onClick={prevStep}>Back</button>
+              <button type="button" onClick={nextStep}>Next</button>
             </div>
           </>
         );
@@ -115,8 +110,8 @@ const WelcomeSetup = () => {
               <option>Advanced</option>
             </select>
             <div className="mt-6 flex justify-between">
-              <button onClick={prevStep}>Back</button>
-              <button onClick={nextStep}>Next</button>
+              <button type="button" onClick={prevStep}>Back</button>
+              <button type="button" onClick={nextStep}>Next</button>
             </div>
           </>
         );
@@ -131,8 +126,8 @@ const WelcomeSetup = () => {
               <option>Both</option>
             </select>
             <div className="mt-6 flex justify-between">
-              <button onClick={prevStep}>Back</button>
-              <button onClick={nextStep}>Next</button>
+              <button type="button" onClick={prevStep}>Back</button>
+              <button type="button" onClick={nextStep}>Next</button>
             </div>
           </>
         );
@@ -149,8 +144,8 @@ const WelcomeSetup = () => {
               <option>Local Meetup</option>
             </select>
             <div className="mt-6 flex justify-between">
-              <button onClick={prevStep}>Back</button>
-              <button onClick={nextStep}>Next</button>
+              <button type="button" onClick={prevStep}>Back</button>
+              <button type="button" onClick={nextStep}>Next</button>
             </div>
           </>
         );
@@ -160,22 +155,23 @@ const WelcomeSetup = () => {
             <label className="block mb-2 font-medium">What do you enjoy most?</label>
             <div className="flex flex-col gap-2">
               {['Roleplay', 'Combat', 'Puzzles', 'Exploration', 'Storytelling'].map((pref) => (
-                <label key={pref}>
+                <label key={pref} className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     name="playPreferences"
                     value={pref}
                     checked={form.playPreferences.includes(pref)}
                     onChange={handleChange}
-                    className="mr-2"
                   />
                   {pref}
                 </label>
               ))}
             </div>
             <div className="mt-6 flex justify-between">
-              <button onClick={prevStep}>Back</button>
-              <button onClick={handleSubmit} className="bg-arcanared text-white px-4 py-2 rounded">Finish</button>
+              <button type="button" onClick={prevStep}>Back</button>
+              <button type="button" onClick={handleSubmit} className="bg-arcanared text-white px-4 py-2 rounded">
+                Finish
+              </button>
             </div>
           </>
         );

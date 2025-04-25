@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
+
 import Navbar from './components/Navbar';
 import Homepage from './pages/Homepage';
 import Signup from './pages/Signup';
@@ -13,11 +14,25 @@ import CreateCampaign from './pages/CreateCampaign';
 import CampaignList from './pages/CampaignList';
 import Messages from './pages/Messages';
 import Tabletop from './components/Tabletop';
+
 import { SocketProvider } from './context/SocketContext';
+import { UserContext } from './context/UserContext';
 
 function App() {
   const location = useLocation();
   const isTabletop = location.pathname.startsWith('/table/');
+  const { isLoading } = useContext(UserContext);
+
+  if (isLoading) {
+    console.log("🕒 Waiting for user context...");
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-parchment text-arcanabrown">
+        Loading user...
+      </div>
+    );
+  }
+
+  console.log("✅ User context ready. Rendering routes...");
 
   return (
     <SocketProvider>
@@ -26,11 +41,27 @@ function App() {
         {/* Public Routes */}
         <Route path="/" element={<Homepage />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/welcome" element={<WelcomeSetup />} />
         <Route path="/landing" element={<Landing />} />
-        <Route path="/user-welcome" element={<UserWelcome />} />
 
-        {/* Protected Routes */}
+        {/* Onboarding Routes */}
+        <Route
+          path="/welcome"
+          element={
+            <ProtectedRoute>
+              <WelcomeSetup />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/user-welcome"
+          element={
+            <ProtectedRoute>
+              <UserWelcome />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Protected App Routes */}
         <Route
           path="/dashboard"
           element={
@@ -71,8 +102,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
-        {/* Tabletop Route */}
         <Route
           path="/table/:campaignId"
           element={

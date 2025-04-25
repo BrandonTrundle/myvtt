@@ -1,101 +1,93 @@
-// 📂 backend/index.js
 const express = require('express');
-const cors = require('cors');
+const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
 const path = require('path');
 const http = require('http');
 const { Server } = require('socket.io');
-const connectDB = require('./config/db');
-const Campaign = require('./models/Campaign');
 
+// Load env variables
 dotenv.config();
-connectDB();
 
+// Import routes
+const authRoutes = require('./controllers/authController');
+const userRoutes = require('./routes/user');
+const campaignRoutes = require('./routes/campaign');
+const mapRoutes = require('./controllers/mapController');
+const messageRoutes = require('./controllers/messageController');
+
+// Allowed origins for dev/local network
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://192.168.0.29:3000', // local network
+  'http://0.0.0.0:3000',       // optional
+];
+
+// Init express app
 const app = express();
-const server = http.createServer(app);
 
-// 🧠 Init Socket.IO
-const io = new Server(server, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
-  },
-});
-
-// 🌐 Middleware
+// Middleware
+app.use(express.json());
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || origin.startsWith('http://192.168.') || origin === 'http://localhost:3000') {
+  origin: function (origin, callback) {
+    console.log('🧪 CORS origin check:', origin);
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.warn(`❌ Blocked by CORS: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
-  methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
   credentials: true,
 }));
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// 📁 Static Files
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use(helmet());
+app.use(morgan('dev'));
 
-// 🔌 Inject io into every request
-app.use((req, res, next) => {
-  req.io = io;
+// Static file serving with correct CORP header
+app.use('/uploads', (req, res, next) => {
+  console.log('📤 Serving static files from /uploads');
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
   next();
+}, express.static(path.join(__dirname, 'uploads')));
+
+// API routes
+app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/campaigns', campaignRoutes);
+app.use('/api/maps', mapRoutes);
+app.use('/api/messages', messageRoutes);
+
+// MongoDB connection
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('✅ MongoDB Connected'))
+  .catch((err) => {
+    console.error('❌ MongoDB Connection Error:', err);
+    process.exit(1);
+  });
+
+// Create HTTP + WebSocket server
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins,
+    credentials: true,
+  }
 });
 
-// 🔌 Socket.IO Handlers
+// WebSocket handling
 io.on('connection', (socket) => {
-  console.log('🧠 Socket connected:', socket.id);
-
-  socket.on('join-campaign', async (campaignId) => {
-    socket.join(campaignId);
-    console.log(`🎯 ${socket.id} joined campaign ${campaignId}`);
-
-    try {
-      const campaign = await Campaign.findById(campaignId);
-      if (campaign?.mapUrl) {
-        socket.emit('map-uploaded', { imageUrl: campaign.mapUrl });
-      }
-    } catch (err) {
-      console.error('❌ Failed to fetch campaign map:', err);
-    }
-
-    // Optional debug
-    setTimeout(() => {
-      io.to(campaignId).emit('debug-ping', { message: `Ping to ${campaignId}` });
-    }, 2000);
-  });
-
-  socket.on('chat-message', (data) => {
-    io.to(data.campaignId).emit('chat-message', data);
-  });
+  console.log('📡 New WebSocket connection:', socket.id);
 
   socket.on('disconnect', () => {
-    console.log('❌ Socket disconnected:', socket.id);
+    console.log('🔌 WebSocket disconnected:', socket.id);
   });
 });
 
-// ✅ Routes
-app.use('/api/user', require('./routes/user'));
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/characters', require('./routes/character'));
-app.use('/api/campaigns', require('./routes/campaign'));
-app.use('/api/messages', require('./routes/message'));
-app.use('/api/maps', require('./routes/map'));
-
-// 🚀 Production: Serve static frontend
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'client', 'dist')));
-  app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, 'client', 'dist', 'index.html'));
-  });
-}
-
-// 🟢 Launch
+// Start the server
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, () => {
   console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
 });

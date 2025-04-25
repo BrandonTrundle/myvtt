@@ -1,25 +1,20 @@
-import React, {
-  useState,
-  useRef,
-  useEffect,
-  useContext,
-  useCallback,
-} from 'react';
+import React, { useState, useRef, useEffect, useContext, useCallback } from 'react';
 import { Bell } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { UserContext } from '../context/UserContext';
 import { apiFetch, API_BASE } from '../utils/api';
 
+const BASE_URL = API_BASE.replace('/api', '');
+
 const Navbar = () => {
   const navigate = useNavigate();
   const menuRef = useRef();
+  const { user, setUser, fetchUser } = useContext(UserContext);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-
-  const { user, setUser, fetchUser } = useContext(UserContext);
 
   // 🖱️ Close dropdown if clicked outside
   useEffect(() => {
@@ -35,44 +30,51 @@ const Navbar = () => {
   // 🔐 Login handler
   const handleLogin = useCallback(async (e) => {
     e.preventDefault();
-
+    console.log("📨 Login attempt for email:", email);
+  
     try {
-      const res = await apiFetch('/auth/login', {
+      const data = await apiFetch('/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
-
-      const text = await res.text();
-      let data;
-      try {
-        data = JSON.parse(text); // ✅ Only try if it's real JSON
-      } catch (err) {
-        console.warn("⚠️ Could not parse JSON. Response was:", text);
-        return; // Or handle fallback logic here
-      }
-
-      if (!res.ok) {
+  
+      if (!data || data.message) {
         setError(data.message || 'Login failed');
+        console.warn("❌ Login failed:", data.message);
         return;
       }
-
+  
+      // Store token and user info
       localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user)); // ✅ Save user as well
+      console.log("✅ Login successful, token stored");
+  
+      // Fetch fresh user context
       await fetchUser();
-
-      navigate(data.user?.onboardingComplete ? '/user-welcome' : '/welcome');
-
+  
+      // Redirect based on onboarding status
+      if (data.user?.onboardingComplete) {
+        console.log("📡 Redirecting to /user-welcome");
+        navigate('/user-welcome');
+      } else {
+        console.log("📡 Redirecting to /welcome");
+        navigate('/welcome');
+      }
+  
       setMenuOpen(false);
       setError('');
     } catch (err) {
-      console.error(err);
+      console.error("❌ Error during login:", err);
       setError('Server error during login');
     }
   }, [email, password, fetchUser, navigate]);
 
   // 🔓 Logout handler
   const handleLogout = useCallback(() => {
+    console.log("📨 Logging out...");
     localStorage.removeItem('token');
+    localStorage.removeItem('user'); // ✅ clear stored user too
     setUser(null);
     navigate('/');
   }, [navigate, setUser]);
@@ -81,7 +83,7 @@ const Navbar = () => {
     <nav className="bg-parchment border-b border-arcanabrown px-6 py-3 flex justify-between items-center shadow text-sm font-semibold text-arcanabrown">
       {/* Left: Logo + Brand */}
       <div className="flex items-center gap-3">
-        <img src="/arcana-logo.png" alt="ArcanaTable Logo" className="h-10 w-auto" />
+        <img src="arcanatable images/arcana-logo.png" alt="ArcanaTable Logo" className="h-10 w-auto" />
         <span className="text-2xl font-bold tracking-tight text-arcanadeep">ArcanaTable</span>
       </div>
 
@@ -102,7 +104,7 @@ const Navbar = () => {
         {user ? (
           <div className="flex items-center gap-2">
             <img
-              src={user.avatarUrl ? `${API_BASE}${user.avatarUrl}` : '/defaultav.png'}
+              src={user.avatarUrl ? `${BASE_URL}${user.avatarUrl}` : '/defaultav.png'}
               alt="User Avatar"
               className="w-8 h-8 rounded-full border object-cover"
             />

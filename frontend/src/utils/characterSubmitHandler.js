@@ -8,6 +8,8 @@ const submitCharacterForm = async (payload, onSaveSuccess, characterId = null) =
       : `${API_BASE}/characters`;
 
     console.log('📡 Submitting to:', url);
+    console.log('📥 Request payload:', payload);
+
     const response = await fetch(url, {
       method,
       headers: {
@@ -18,9 +20,12 @@ const submitCharacterForm = async (payload, onSaveSuccess, characterId = null) =
     });
 
     const raw = await response.text();
+    console.log('📩 Raw response:', raw);
+
     let data;
     try {
       data = JSON.parse(raw);
+      console.log('✅ Parsed response:', data);
     } catch (err) {
       console.warn('⚠️ Could not parse JSON:', err);
       throw new Error('Non-JSON response from backend');

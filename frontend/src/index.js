@@ -5,11 +5,16 @@ import App from './App';
 import { BrowserRouter } from 'react-router-dom';
 import { UserProvider } from './context/UserContext'; // ← import it here
 
+console.log("📡 Initializing App...");
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
+
 root.render(
   <BrowserRouter>
-    <UserProvider> {/* ← wrap the whole app */}
+    <UserProvider>
       <App />
     </UserProvider>
   </BrowserRouter>
 );
+
+console.log("✅ App rendered successfully.");

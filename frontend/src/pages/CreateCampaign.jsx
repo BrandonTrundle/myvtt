@@ -7,6 +7,7 @@ const CreateCampaign = () => {
     title: '',
     system: '5E',
     module: '',
+    image: null,  // Store the uploaded image here
   });
 
   const [message, setMessage] = useState('');
@@ -17,36 +18,44 @@ const CreateCampaign = () => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setForm((prev) => ({ ...prev, image: file }));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    console.log("📡 Submitting form with data:", form);
+  
     if (!form.title || !form.system) {
       setMessage('Please fill in the required fields.');
+      console.warn('⚠️ Missing required fields.');
       return;
+    }
+  
+    const campaignData = new FormData();
+    campaignData.append('title', form.title);
+    campaignData.append('system', form.system);
+    campaignData.append('module', form.module);
+  
+    // Append the image if selected
+    if (form.image) {
+      campaignData.append('image', form.image);
     }
 
     try {
-      const res = await apiFetch('/campaigns', {
+      const data = await apiFetch('/campaigns', {
         method: 'POST',
-        body: JSON.stringify(form),
+        body: campaignData,
       });
-
-      const text = await res.text();
-      let data;
-      try {
-        data = JSON.parse(text); // ✅ Only try if it's real JSON
-      } catch (err) {
-        console.warn("⚠️ Could not parse JSON. Response was:", text);
-        return; // Or handle fallback logic here
-      }
-      if (res.ok) {
-        navigate('/campaigns'); // or to `/campaigns/${data._id}` if you build that later
-      } else {
-        setMessage(data.message || 'Error creating campaign.');
-      }
+  
+      console.log("✅ Campaign created successfully:", data);
+      navigate('/campaigns');
     } catch (err) {
       console.error('❌ Create error:', err);
-      setMessage('Server error.');
+      setMessage(err.message || 'Server error.');
     }
   };
 
@@ -95,6 +104,27 @@ const CreateCampaign = () => {
           />
         </div>
 
+        {/* Image Upload Section */}
+        <div>
+          <label className="block font-medium mb-1">Campaign Image (Optional)</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="w-full border p-2 rounded"
+          />
+        </div>
+
+        {/* Display default image */}
+        <div className="mt-4">
+          <h3 className="text-lg font-medium">Default Image Preview:</h3>
+          <img
+            src={form.image ? URL.createObjectURL(form.image) : '/default images/default-campaign.jpg'}
+            alt="Default Campaign"
+            className="w-full h-40 object-cover rounded mt-2"
+          />
+        </div>
+
         <button type="submit" className="bg-arcanared text-white px-4 py-2 rounded hover:bg-arcanabrown transition">
           Create Campaign
         </button>
@@ -104,5 +134,6 @@ const CreateCampaign = () => {
     </div>
   );
 };
+
 
 export default CreateCampaign;

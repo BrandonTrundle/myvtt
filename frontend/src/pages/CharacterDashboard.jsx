@@ -1,5 +1,3 @@
-// CharacterDashboard.jsx
-
 import React, { useState } from 'react';
 import { useCharacters } from '../hooks/useCharacters';
 import CharacterSheetWindow from '../components/CharacterSheet/CharacterSheetWindow';
@@ -17,20 +15,22 @@ const CharacterDashboard = () => {
     } else {
       setActiveCharacter(null);
       setShowSheet(true);
+      console.log("🖱️ Opening character creation sheet (manual mode).");
     }
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this character?')) return;
 
+    console.log(`🗑️ Deleting character with ID: ${id}`);
     try {
       const res = await apiFetch(`/characters/${id}`, {
-
         method: 'DELETE',
       });
 
       if (res.ok) {
         setCharacters((prev) => prev.filter((char) => char._id !== id));
+        console.log(`✅ Character with ID: ${id} deleted successfully`);
       } else {
         const text = await res.text();
         let data;
@@ -68,13 +68,13 @@ const CharacterDashboard = () => {
       alert('There was a problem loading this character. Try again later.');
     }
   };
-  
 
   const handleCharacterSaved = async () => {
     const exit = window.confirm('Character saved! Exit character creation?');
     if (exit) {
       setShowSheet(false);
       await fetchCharacters();
+      console.log("✅ Character saved and fetching updated character list.");
     }
   };
 
@@ -98,47 +98,46 @@ const CharacterDashboard = () => {
         />
       )}
 
-{/* Character list */}
-<div className="mt-10">
-  <h2 className="text-2xl font-bold mb-4">Saved Characters</h2>
-  {characters.length === 0 ? (
-    <p className="text-gray-600">No characters yet.</p>
-  ) : (
-    <div className="grid gap-4">
-      {characters.map((char) => (
-        <div
-          key={char._id}
-          className="bg-white p-4 rounded shadow border border-arcanabrown cursor-pointer hover:bg-gray-100"
-          onClick={() => handleCharacterClick(char)}
-        >
-          <div className="flex gap-4 items-center">
-            <img
-              src={char.portraitImage || '/default images/DefaultCharacter.png'}
-              alt={`${char.charname}'s portrait`}
-              className="w-16 h-16 object-cover rounded-full border border-arcanabrown"
-            />
-            <div>
-            <h3 className="text-lg font-bold">{char.charname}</h3>
-              <p>Class: {char.class}</p>
-              <p>Race: {char.race}</p>
-              <p>Level: {char.level}</p>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDelete(char._id);
-                }}
-                className="mt-2 text-red-600 underline text-sm hover:text-arcanabrown"
+      {/* Character list */}
+      <div className="mt-10">
+        <h2 className="text-2xl font-bold mb-4">Saved Characters</h2>
+        {characters.length === 0 ? (
+          <p className="text-gray-600">No characters yet.</p>
+        ) : (
+          <div className="grid gap-4">
+            {characters.map((char) => (
+              <div
+                key={char._id}
+                className="bg-white p-4 rounded shadow border border-arcanabrown cursor-pointer hover:bg-gray-100"
+                onClick={() => handleCharacterClick(char)}
               >
-                Delete
-              </button>
-            </div>
+                <div className="flex gap-4 items-center">
+                  <img
+                    src={char.portraitImage || '/default images/DefaultCharacter.png'}
+                    alt={`${char.charname}'s portrait`}
+                    className="w-16 h-16 object-cover rounded-full border border-arcanabrown"
+                  />
+                  <div>
+                    <h3 className="text-lg font-bold">{char.charname}</h3>
+                    <p>Class: {char.class}</p>
+                    <p>Race: {char.race}</p>
+                    <p>Level: {char.level}</p>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(char._id);
+                      }}
+                      className="mt-2 text-red-600 underline text-sm hover:text-arcanabrown"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
-      ))}
-    </div>
-  )}
-</div>
-
+        )}
+      </div>
 
       {/* For DMs */}
       <div className="mt-16 border-t border-arcanabrown pt-6">

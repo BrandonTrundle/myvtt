@@ -1,49 +1,26 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import UserInfoCard from '../components/UserInfoCard';
 import { apiFetch } from '../utils/api';
+import { UserContext } from '../context/UserContext';
 
 const UserWelcome = () => {
-  const [user, setUser] = useState({});
+  const { user } = useContext(UserContext);
   const [campaigns, setCampaigns] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await apiFetch('/auth/me');
-        const text = await res.text();
-        console.log("📩 Raw user info:", text);
-      
-        const data = JSON.parse(text);
-        if (res.ok) {
-          setUser(data); // or use it however needed
-        } else {
-          console.warn("⚠️ Server returned error:", data);
-        }
-      } catch (err) {
-        console.error("❌ Could not fetch user info:", err);
-      }
-    };
-
     const fetchCampaigns = async () => {
+      console.log("📡 Fetching user's campaigns...");
       try {
-        const res = await apiFetch('/campaigns/mine');
-        const text = await res.text();
-        let data;
-        try {
-          data = JSON.parse(text); // ✅ Only try if it's real JSON
-        } catch (err) {
-          console.warn("⚠️ Could not parse JSON. Response was:", text);
-          return; // Or handle fallback logic here
-        }
-        if (res.ok) setCampaigns(data);
+        const data = await apiFetch('/campaigns/mine');
+        setCampaigns(data);
+        console.log("✅ Campaigns fetched:", data);
       } catch (err) {
         console.error('❌ Error fetching campaigns:', err);
       }
     };
 
-    fetchUser();
     fetchCampaigns();
 
     // Track play session
@@ -52,6 +29,8 @@ const UserWelcome = () => {
       const sessionEnd = Date.now();
       const minutes = Math.floor((sessionEnd - sessionStart) / 60000);
       if (minutes <= 0) return;
+
+      console.log("📡 Updating play time:", minutes, "minutes");
 
       try {
         await apiFetch('/user/hours-played', {
@@ -70,6 +49,14 @@ const UserWelcome = () => {
     };
   }, []);
 
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-parchment flex items-center justify-center text-arcanabrown">
+        <p>Loading your welcome screen...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-parchment min-h-screen text-arcanadeep px-6 py-10 relative">
       {/* Top-right user info card */}
@@ -86,7 +73,6 @@ const UserWelcome = () => {
       <p className="mb-8 text-lg">Let’s get you set up and ready to play.</p>
 
       <div className="grid gap-6 max-w-3xl">
-        {/* Campaigns box (dynamic based on campaign count) */}
         {campaigns.length === 0 ? (
           <div
             onClick={() => navigate('/create-campaign')}

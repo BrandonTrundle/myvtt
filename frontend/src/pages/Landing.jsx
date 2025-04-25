@@ -1,6 +1,11 @@
 import React from 'react';
 
 const Landing = () => {
+
+  const handleGetStartedClick = () => {
+    console.log("📨 User clicked 'Get Started Free'");
+  };
+
   return (
     <div className="bg-parchment text-arcanabrown min-h-screen">
       {/* Navbar Placeholder */}
@@ -16,7 +21,10 @@ const Landing = () => {
         <p className="text-xl mb-8 max-w-xl mx-auto">
           Play online with friends, build custom maps, and create immersive campaigns – all in your browser.
         </p>
-        <button className="bg-arcanared text-white font-semibold px-6 py-3 rounded-lg hover:bg-arcanabrown transition">
+        <button
+          className="bg-arcanared text-white font-semibold px-6 py-3 rounded-lg hover:bg-arcanabrown transition"
+          onClick={handleGetStartedClick}
+        >
           Get Started Free
         </button>
       </section>

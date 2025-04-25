@@ -1,111 +1,141 @@
-const User = require('../models/User');
+const express = require('express');
+const router = express.Router();
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const User = require('../models/User');
+const { protect } = require('../middleware/authMiddleware');
 
-// Create JWT
-const generateToken = (user) => {
-  return jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-    expiresIn: '7d',
-  });
-};
-
-// POST /api/auth/signup
-exports.signup = async (req, res) => {
-  const { firstName, lastName, email, password } = req.body;
+// Register a new user
+router.post('/signup', async (req, res) => {
+  console.log("📨 POST /signup called");
 
   try {
-    const userExists = await User.findOne({ email });
-    if (userExists) {
+    const { email, password, firstName, lastName } = req.body;
+    console.log("Received signup data:", { email, firstName, lastName });
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      console.log("❌ Signup failed: Email already in use");
       return res.status(400).json({ message: 'Email already in use' });
     }
 
-    const user = await User.create({
+    const newUser = new User({
+      email,
+      password, // Let Mongoose pre-save hook hash this
       firstName,
       lastName,
-      email,
-      password,
-      onboardingComplete: false, // set false initially
     });
 
-    res.status(201).json({
-      message: 'User created successfully',
-      token: generateToken(user),
-      user: {
-        id: user._id,
-        email: user.email,
-        name: `${user.firstName} ${user.lastName}`
-      }
+    await newUser.save();
+    console.log("✅ New user created with ID:", newUser._id);
+
+    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
+      expiresIn: '7d',
     });
+
+    console.log("🔐 JWT generated for new user");
+    res.status(201).json({ token });
   } catch (err) {
-    res.status(500).json({ message: 'Signup failed', error: err.message });
+    console.error("❌ Registration error:", err);
+    res.status(500).json({ message: 'Failed to register user' });
   }
-};
+});
 
-// POST /api/auth/login
-exports.login = async (req, res) => {
-  const { email, password } = req.body;
+// Login a user
+router.post('/login', async (req, res) => {
+  console.log("📨 POST /login called");
 
   try {
+    const { email, password } = req.body;
+    console.log("Login attempt for email:", email);
+
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: 'Invalid email or password' });
+      console.log("❌ Login failed: User not found");
+      return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    const isMatch = await user.matchPassword(password);
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid email or password' });
+      console.log("❌ Login failed: Incorrect password");
+      return res.status(400).json({ message: 'Invalid credentials' });
     }
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: '7d',
+    });
+
+    console.log("✅ Login successful, JWT generated for:", user._id);
 
     res.status(200).json({
-      message: 'Login successful',
-      token: generateToken(user),
+      token,
       user: {
-        id: user._id,
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
         email: user.email,
-        name: `${user.firstName} ${user.lastName}`,
-        onboardingComplete: user.onboardingComplete
+        avatarUrl: user.avatarUrl,
+        subscriptionTier: user.subscriptionTier,
+        hoursPlayed: user.hoursPlayed,
+        language: user.language,
+        playPreferences: user.playPreferences,
+        onboardingComplete: user.onboardingComplete,
+        displayName: user.displayName,
+        role: user.role,
+        experienceLevel: user.experienceLevel,
+        groupType: user.groupType,
       }
     });
   } catch (err) {
-    res.status(500).json({ message: 'Login failed', error: err.message });
+    console.error("❌ Login error:", err);
+    res.status(500).json({ message: 'Login failed' });
   }
-};
+});
 
-// PATCH /api/auth/onboarding
-exports.completeOnboarding = async (req, res) => {
-  const userId = req.user._id;
-  const {
-    displayName,
-    language,
-    experienceLevel,
-    role,
-    groupType,
-    playPreferences
-  } = req.body;
+// Get current authenticated user
+router.get('/me', protect, async (req, res) => {
+  console.log("📨 GET /me called");
 
   try {
-    const user = await User.findByIdAndUpdate(
-      userId,
-      {
-        displayName,
-        language,
-        experienceLevel,
-        role,
-        groupType,
-        playPreferences,
-        onboardingComplete: true
-      },
-      { new: true }
-    );
+    console.log("Authenticated user ID from token:", req.user._id);
+    const user = await User.findById(req.user._id).select('-password');
 
-    res.status(200).json({
-      message: 'Onboarding completed',
-      user: {
-        id: user._id,
-        email: user.email,
-        displayName: user.displayName
-      }
-    });
+    if (!user) {
+      console.log("❌ /me failed: User not found");
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    console.log("✅ /me success: User data returned");
+    res.json(user);
   } catch (err) {
-    res.status(500).json({ message: 'Failed to complete onboarding', error: err.message });
+    console.error("❌ /me error:", err);
+    res.status(500).json({ message: 'Failed to get user info' });
   }
-};
+});
+
+// Update onboarding fields
+router.patch('/onboarding', protect, async (req, res) => { // ✅ FIXED
+  console.log("📨 PATCH /onboarding called");
+
+  try {
+    console.log("Updating onboarding fields for user:", req.user._id);
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      { ...req.body, onboardingComplete: true },
+      { new: true }
+    ).select('-password');
+
+    if (!updatedUser) {
+      console.log("❌ Onboarding update failed: User not found");
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    console.log("✅ Onboarding updated for user:", updatedUser._id);
+    res.json(updatedUser);
+  } catch (err) {
+    console.error("❌ Onboarding update error:", err);
+    res.status(500).json({ message: 'Failed to complete onboarding' });
+  }
+});
+
+module.exports = router;

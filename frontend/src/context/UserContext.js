@@ -1,45 +1,58 @@
-import React, { createContext, useState, useEffect } from 'react';
-import { apiFetch } from '../utils/api'; // adjust path if needed
-
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import { apiFetch } from '../utils/api';
 
 export const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchUser = async () => {
     const token = localStorage.getItem('token');
     if (!token) {
       console.warn('⚠️ No token in localStorage');
+      setUser(null);
+      setIsLoading(false);
       return;
     }
-  
-    console.log('📡 Fetching user info from:', '/api/auth/me');
-    console.log('🔐 Using token:', token);
-  
+
     try {
-      const res = await apiFetch('/auth/me');
-      const text = await res.text();
-      console.log("📩 Raw user info:", text);
-    
-      const data = JSON.parse(text);
-      if (res.ok) {
-        setUser(data); // or use it however needed
+      const data = await apiFetch('/auth/me');
+      if (!data || data.message) {
+        console.warn("⚠️ Failed to fetch user info:", data.message);
+        setUser(null);
       } else {
-        console.warn("⚠️ Server returned error:", data);
+        console.log("✅ User data fetched successfully:", data);
+        setUser(data);
+        localStorage.setItem('user', JSON.stringify(data));
       }
     } catch (err) {
       console.error("❌ Could not fetch user info:", err);
+      setUser(null);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
+    console.log('📡 Fetching user info on component mount...');
     fetchUser();
   }, []);
 
+  const isAuthenticated = !!user;
+
   return (
-    <UserContext.Provider value={{ user, setUser, fetchUser }}>
-      {children}
+    <UserContext.Provider value={{ user, setUser, fetchUser, isAuthenticated, isLoading }}>
+      {isLoading ? <div>Loading user...</div> : children}
     </UserContext.Provider>
   );
+};
+
+// ✅ Add this custom hook for clean usage
+export const useUser = () => {
+  const context = useContext(UserContext);
+  if (!context) {
+    throw new Error('useUser must be used within a UserProvider');
+  }
+  return context;
 };
