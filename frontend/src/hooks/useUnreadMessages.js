@@ -7,16 +7,15 @@ export function useUnreadMessages() {
   useEffect(() => {
     const checkMessages = async () => {
       try {
-        const res = await apiFetch('/messages/unread');
-        const text = await res.text();
-        let data;
-        try {
-          data = JSON.parse(text); // ✅ Only try if it's real JSON
-        } catch (err) {
-          console.warn("⚠️ Could not parse JSON. Response was:", text);
-          return; // Or handle fallback logic here
+        // Directly use the data returned by apiFetch (it's already parsed as JSON)
+        const data = await apiFetch('/messages/unread');
+        
+        // If data has 'unread' field, check if there are unread messages
+        if (data && data.unread) {
+          setHasUnread(data.unread > 0);
+        } else {
+          console.warn('⚠️ Invalid response format or no unread messages.');
         }
-        setHasUnread(data.unread > 0);
       } catch (err) {
         console.error('❌ Failed to check unread messages', err);
       }

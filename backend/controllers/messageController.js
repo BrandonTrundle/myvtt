@@ -48,12 +48,18 @@ exports.getMessages = async (req, res) => {
 // 📨 Count unread messages
 exports.getUnreadMessagesCount = async (req, res) => {
   try {
+    // Log the recipient user ID to verify the request is correct
+    console.log('Recipient user ID:', req.user._id);
+
     const count = await Message.countDocuments({
       recipient: req.user._id,
       isRead: false,
     });
 
-    res.json({ count });
+    // Log the actual count
+    console.log('Unread messages count:', count);
+
+    res.json({ unread: count });
   } catch (err) {
     console.error('❌ Error counting unread messages:', err);
     res.status(500).json({ message: 'Failed to count messages' });
