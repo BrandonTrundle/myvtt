@@ -1,5 +1,3 @@
-// CharacterSheetWindow.jsx
-
 import { useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import CharacterSheetForm from './CharacterSheetForm';
@@ -14,21 +12,22 @@ const CharacterSheetWindow = ({ onClose, onSaveSuccess, character }) => {
   const handleSubmit = async (e, portraitImage, formData) => {
     e.preventDefault();
 
+    const confirmed = newWindowRef.current.confirm("Are you finished with your character?");
+    if (!confirmed) {
+      console.log("🛑 Save canceled by user.");
+      return;
+    }
+
     const payload = {
-      // Physical Attributes
       age: formData.age || '',
       height: formData.height || '',
       weight: formData.weight || '',
       eyes: formData.eyes || '',
       skin: formData.skin || '',
       hair: formData.hair || '',
-
-      // Allies & Organizations
       orgName: formData.orgName || '',
       orgSymbolImage: formData.orgSymbolImage || '',
       allies: formData.allies || '',
-
-      // Full Spellcasting Section (if implemented)
       spells: formData.spells || [],
       spellSlots_1: toNumber(formData.spellSlots_1),
       spellSlots_2: toNumber(formData.spellSlots_2),
@@ -57,10 +56,8 @@ const CharacterSheetWindow = ({ onClose, onSaveSuccess, character }) => {
       background: formData.background || '',
       alignment: formData.alignment || '',
       experiencepoints: toNumber(formData.experiencepoints),
-      
       appearance: formData.appearance || '',
       portraitImage: portraitImage || null,
-
       strscore: toNumber(formData.strscore),
       strmod: toNumber(formData.strmod),
       dexscore: toNumber(formData.dexscore),
@@ -73,19 +70,16 @@ const CharacterSheetWindow = ({ onClose, onSaveSuccess, character }) => {
       wismod: toNumber(formData.wismod),
       chascore: toNumber(formData.chascore),
       chamod: toNumber(formData.chamod),
-
       "strength-save": toNumber(formData["strength-save"]),
       "strength-save-prof": !!formData["strength-save-prof"],
       "dexterity-save": toNumber(formData["dexterity-save"]),
       "dexterity-save-prof": !!formData["dexterity-save-prof"],
-
       ac: toNumber(formData.ac),
       initiative: toNumber(formData.initiative),
       speed: toNumber(formData.speed),
       maxhp: toNumber(formData.maxhp),
       currenthp: toNumber(formData.currenthp),
       temphp: toNumber(formData.temphp),
-
       hitdice: formData.hitdice || '',
       "success-0": !!formData["success-0"],
       "success-1": !!formData["success-1"],
@@ -93,43 +87,48 @@ const CharacterSheetWindow = ({ onClose, onSaveSuccess, character }) => {
       "failure-0": !!formData["failure-0"],
       "failure-1": !!formData["failure-1"],
       "failure-2": !!formData["failure-2"],
-
       attacks: (formData.attacks || []).filter(
         (a) => a.name || a.atk || a.damage || a.type
       ),
       "attack-notes": formData["attack-notes"] || '',
-
       skills: formData.skills || [],
-
       inspiration: toNumber(formData.inspiration),
       proficiencybonus: toNumber(formData.proficiencybonus),
-
       spellcastingClass: formData.spellcastingClass || '',
       spellcastingAbility: formData.spellcastingAbility || '',
       spellSaveDC: toNumber(formData.spellSaveDC),
       spellAttackBonus: toNumber(formData.spellAttackBonus),
-
       equipment: formData.equipment || [],
       coins: formData.coins || { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 },
       treasure: formData.treasure || [],
-
       personalityTraits: formData.personalityTraits || '',
       ideals: formData.ideals || '',
       bonds: formData.bonds || '',
       flaws: formData.flaws || '',
       features: formData.features || '',
       additionalFeatures: formData.additionalFeatures || '',
-
       passiveWisdom: toNumber(formData.passiveWisdom),
       otherProficiencies: formData.otherProficiencies || '',
-
       system: formData.system || '5E',
       backstory: formData.backstory || '',
       isPublic: formData.isPublic || false,
     };
 
     console.log("🧪 Final payload to submit:", payload);
-    await submitCharacterForm(payload, onSaveSuccess, character?._id || null);
+
+    try {
+      await submitCharacterForm(payload, onSaveSuccess, character?._id || null);
+
+      if (window.opener && !window.opener.closed) {
+        window.opener.postMessage({ type: 'CHARACTER_SAVED' }, '*');
+      }
+
+      // IMPORTANT: Only close if parent confirms it
+      // Otherwise let the parent refresh and close things properly
+    } catch (err) {
+      console.error('❌ Error saving character:', err);
+      alert('Failed to save character. Please try again.');
+    }
   };
 
   useEffect(() => {

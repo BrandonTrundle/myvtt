@@ -1,6 +1,8 @@
+// utils/characterSubmitHandler.js
+
 const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:5000/api';
 
-const submitCharacterForm = async (payload, onSaveSuccess, characterId = null) => {
+const submitCharacterForm = async (payload, onSaveSuccess = null, characterId = null) => {
   try {
     const method = characterId ? 'PUT' : 'POST';
     const url = characterId
@@ -37,8 +39,12 @@ const submitCharacterForm = async (payload, onSaveSuccess, characterId = null) =
       return;
     }
 
-    console.log('✅ Character saved:', data);
-    onSaveSuccess(data);
+    console.log('✅ Character saved successfully.');
+
+    // ✨ Automatically trigger onSaveSuccess if provided
+    if (typeof onSaveSuccess === 'function') {
+      onSaveSuccess();
+    }
   } catch (error) {
     console.error('🚨 Network error during character submission:', error);
     alert('Network error — please check your connection or try again.');

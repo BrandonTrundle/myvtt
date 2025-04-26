@@ -1,33 +1,41 @@
+import { useEffect, useState } from 'react';
+
 const SkillsBlock = ({ values, onChange }) => {
-  const skills = values.skills || [
-    { name: 'Acrobatics', stat: 'Dex', mod: '', proficient: false },
-    { name: 'Animal Handling', stat: 'Wis', mod: '', proficient: false },
-    { name: 'Arcana', stat: 'Int', mod: '', proficient: false },
-    { name: 'Athletics', stat: 'Str', mod: '', proficient: false },
-    { name: 'Deception', stat: 'Cha', mod: '', proficient: false },
-    { name: 'History', stat: 'Int', mod: '', proficient: false },
-    { name: 'Insight', stat: 'Wis', mod: '', proficient: false },
-    { name: 'Intimidation', stat: 'Cha', mod: '', proficient: false },
-    { name: 'Investigation', stat: 'Int', mod: '', proficient: false },
-    { name: 'Medicine', stat: 'Wis', mod: '', proficient: false },
-    { name: 'Nature', stat: 'Int', mod: '', proficient: false },
-    { name: 'Perception', stat: 'Wis', mod: '', proficient: false },
-    { name: 'Performance', stat: 'Cha', mod: '', proficient: false },
-    { name: 'Persuasion', stat: 'Cha', mod: '', proficient: false },
-    { name: 'Religion', stat: 'Int', mod: '', proficient: false },
-    { name: 'Sleight of Hand', stat: 'Dex', mod: '', proficient: false },
-    { name: 'Stealth', stat: 'Dex', mod: '', proficient: false },
-    { name: 'Survival', stat: 'Wis', mod: '', proficient: false }
-  ];
+  const [skills, setSkills] = useState([]);
+
+  useEffect(() => {
+    setSkills(values.skills || [
+      { name: 'Acrobatics', stat: 'Dex', mod: '', proficient: false },
+      { name: 'Animal Handling', stat: 'Wis', mod: '', proficient: false },
+      { name: 'Arcana', stat: 'Int', mod: '', proficient: false },
+      { name: 'Athletics', stat: 'Str', mod: '', proficient: false },
+      { name: 'Deception', stat: 'Cha', mod: '', proficient: false },
+      { name: 'History', stat: 'Int', mod: '', proficient: false },
+      { name: 'Insight', stat: 'Wis', mod: '', proficient: false },
+      { name: 'Intimidation', stat: 'Cha', mod: '', proficient: false },
+      { name: 'Investigation', stat: 'Int', mod: '', proficient: false },
+      { name: 'Medicine', stat: 'Wis', mod: '', proficient: false },
+      { name: 'Nature', stat: 'Int', mod: '', proficient: false },
+      { name: 'Perception', stat: 'Wis', mod: '', proficient: false },
+      { name: 'Performance', stat: 'Cha', mod: '', proficient: false },
+      { name: 'Persuasion', stat: 'Cha', mod: '', proficient: false },
+      { name: 'Religion', stat: 'Int', mod: '', proficient: false },
+      { name: 'Sleight of Hand', stat: 'Dex', mod: '', proficient: false },
+      { name: 'Stealth', stat: 'Dex', mod: '', proficient: false },
+      { name: 'Survival', stat: 'Wis', mod: '', proficient: false },
+    ]);
+  }, [values.skills]);
 
   const updateSkill = (index, field, value) => {
     const updated = [...skills];
     updated[index][field] = value;
+    setSkills(updated);
     onChange({ target: { name: 'skills', value: updated } });
   };
 
   const addSkill = () => {
     const updated = [...skills, { name: '', stat: '', mod: '', proficient: false }];
+    setSkills(updated);
     onChange({ target: { name: 'skills', value: updated } });
   };
 

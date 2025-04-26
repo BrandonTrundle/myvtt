@@ -17,6 +17,7 @@ const userRoutes = require('./routes/user');
 const campaignRoutes = require('./routes/campaign');
 const mapRoutes = require('./routes/map');
 const messageRoutes = require('./routes/message');
+const characterRoutes = require('./routes/character');
 
 const allowedOrigins = [
   'http://localhost:3000',
@@ -26,7 +27,8 @@ const allowedOrigins = [
 
 const app = express();
 
-app.use(express.json());
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 app.use(cors({
   origin: function (origin, callback) {
     console.log('🧪 CORS origin check:', origin);
@@ -54,6 +56,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/campaigns', campaignRoutes);
 app.use('/api/maps', mapRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/characters', characterRoutes);
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)

@@ -1,5 +1,3 @@
-// AttackSection.jsx
-
 import React, { useState, useEffect } from 'react';
 
 const defaultRows = [
@@ -9,27 +7,38 @@ const defaultRows = [
 ];
 
 const AttackSection = ({ values, onChange }) => {
-  const [rows, setRows] = useState(values.attacks || defaultRows);
+  const [rows, setRows] = useState(() => values.attacks?.length ? values.attacks : defaultRows);
 
   useEffect(() => {
-    // Update parent formData whenever rows change
-    console.log("🧠 Attack rows updated:", rows);
-    onChange({
-      target: {
-        name: 'attacks',
-        value: rows
-      }
-    });
-  }, [rows]);
+    // 🔥 Only set if the values.attacks is not the same as our rows
+    if (values.attacks && JSON.stringify(values.attacks) !== JSON.stringify(rows)) {
+      console.log('🔄 Incoming attack values different, updating rows');
+      setRows(values.attacks);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [values.attacks]); // (only watching the incoming values)
 
   const handleChange = (index, field, value) => {
     const updated = [...rows];
     updated[index][field] = value;
     setRows(updated);
+    onChange({
+      target: {
+        name: 'attacks',
+        value: updated,
+      },
+    });
   };
 
   const addRow = () => {
-    setRows([...rows, { name: '', atk: '', damage: '', type: '' }]);
+    const updated = [...rows, { name: '', atk: '', damage: '', type: '' }];
+    setRows(updated);
+    onChange({
+      target: {
+        name: 'attacks',
+        value: updated,
+      },
+    });
   };
 
   return (

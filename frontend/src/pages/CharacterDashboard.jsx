@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+// CharacterDashboard.jsx
+import React, { useState, useEffect } from 'react';
 import { useCharacters } from '../hooks/useCharacters';
 import CharacterSheetWindow from '../components/CharacterSheet/CharacterSheetWindow';
 import { apiFetch } from '../utils/api';
@@ -7,6 +8,56 @@ const CharacterDashboard = () => {
   const { characters, setCharacters, fetchCharacters } = useCharacters();
   const [showSheet, setShowSheet] = useState(false);
   const [activeCharacter, setActiveCharacter] = useState(null);
+
+  useEffect(() => {
+    const handleMessage = (event) => {
+      if (event.data?.type === 'CHARACTER_SAVED') {
+        console.log('📩 Character saved message received. Refreshing list...');
+        fetchCharacters();
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+  }, [fetchCharacters]);
+
+  const hydrateCharacterData = (char) => {
+    const defaultSkills = [
+      { name: 'Acrobatics', stat: 'Dex', mod: '', proficient: false },
+      { name: 'Animal Handling', stat: 'Wis', mod: '', proficient: false },
+      { name: 'Arcana', stat: 'Int', mod: '', proficient: false },
+      { name: 'Athletics', stat: 'Str', mod: '', proficient: false },
+      { name: 'Deception', stat: 'Cha', mod: '', proficient: false },
+      { name: 'History', stat: 'Int', mod: '', proficient: false },
+      { name: 'Insight', stat: 'Wis', mod: '', proficient: false },
+      { name: 'Intimidation', stat: 'Cha', mod: '', proficient: false },
+      { name: 'Investigation', stat: 'Int', mod: '', proficient: false },
+      { name: 'Medicine', stat: 'Wis', mod: '', proficient: false },
+      { name: 'Nature', stat: 'Int', mod: '', proficient: false },
+      { name: 'Perception', stat: 'Wis', mod: '', proficient: false },
+      { name: 'Performance', stat: 'Cha', mod: '', proficient: false },
+      { name: 'Persuasion', stat: 'Cha', mod: '', proficient: false },
+      { name: 'Religion', stat: 'Int', mod: '', proficient: false },
+      { name: 'Sleight of Hand', stat: 'Dex', mod: '', proficient: false },
+      { name: 'Stealth', stat: 'Dex', mod: '', proficient: false },
+      { name: 'Survival', stat: 'Wis', mod: '', proficient: false },
+    ];
+
+    const defaultAttacks = [
+      { name: '', atk: '', damage: '', type: '' },
+      { name: '', atk: '', damage: '', type: '' },
+      { name: '', atk: '', damage: '', type: '' },
+    ];
+
+    return {
+      ...char,
+      skills: Array.isArray(char.skills) && char.skills.length > 0 ? char.skills : defaultSkills,
+      attacks: Array.isArray(char.attacks) && char.attacks.length > 0 ? char.attacks : defaultAttacks,
+    };
+  };
 
   const handleCreateClick = () => {
     const useWizard = window.confirm('Would you like to use the character creation wizard?');
@@ -24,65 +75,38 @@ const CharacterDashboard = () => {
 
     console.log(`🗑️ Deleting character with ID: ${id}`);
     try {
-      const res = await apiFetch(`/characters/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (res.ok) {
-        setCharacters((prev) => prev.filter((char) => char._id !== id));
-        console.log(`✅ Character with ID: ${id} deleted successfully`);
-      } else {
-        const text = await res.text();
-        let data;
-        try {
-          data = JSON.parse(text);
-        } catch (err) {
-          console.warn("⚠️ Could not parse JSON. Response was:", text);
-          return;
-        }
-        alert(data.message || 'Failed to delete character');
-      }
+      await apiFetch(`/characters/${id}`, { method: 'DELETE' });
+      await fetchCharacters();
+      console.log("✅ Character deleted and list refreshed");
     } catch (err) {
       console.error('❌ Delete failed:', err);
+      alert(err.message || 'Failed to delete character');
     }
   };
 
   const handleCharacterClick = async (char) => {
     try {
-      console.log("📡 Fetching character by ID:", char._id);
-      const res = await apiFetch(`/characters/${char._id}`);
-  
-      console.log("🧪 Response status:", res.status);
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.warn("⚠️ Server response:", errorText);
-        throw new Error('Failed to fetch full character data.');
-      }
-  
-      const fullChar = await res.json();
-      console.log("✅ Full character loaded:", fullChar);
-      setActiveCharacter(fullChar);
+      const fullChar = await apiFetch(`/characters/${char._id}`);
+      const hydratedChar = hydrateCharacterData(fullChar);
+      console.log("✅ Character loaded and hydrated:", hydratedChar);
+      setActiveCharacter(hydratedChar);
       setShowSheet(true);
     } catch (err) {
       console.error('❌ Failed to load character:', err);
-      alert('There was a problem loading this character. Try again later.');
+      alert('There was a problem loading this character.');
     }
   };
 
   const handleCharacterSaved = async () => {
-    const exit = window.confirm('Character saved! Exit character creation?');
-    if (exit) {
-      setShowSheet(false);
-      await fetchCharacters();
-      console.log("✅ Character saved and fetching updated character list.");
-    }
+    setShowSheet(false);
+    await fetchCharacters();
+    console.log("✅ Character saved and list refreshed.");
   };
 
   return (
     <div className="bg-parchment min-h-screen px-6 py-10 text-arcanadeep">
       <h1 className="text-4xl font-bold mb-6">Your Characters</h1>
 
-      {/* Create Character Button */}
       <button
         onClick={handleCreateClick}
         className="mb-6 bg-arcanared text-white px-4 py-2 rounded hover:bg-arcanabrown"
@@ -98,7 +122,6 @@ const CharacterDashboard = () => {
         />
       )}
 
-      {/* Character list */}
       <div className="mt-10">
         <h2 className="text-2xl font-bold mb-4">Saved Characters</h2>
         {characters.length === 0 ? (
@@ -137,28 +160,6 @@ const CharacterDashboard = () => {
             ))}
           </div>
         )}
-      </div>
-
-      {/* For DMs */}
-      <div className="mt-16 border-t border-arcanabrown pt-6">
-        <h2 className="text-2xl font-bold mb-4">🎲 Resources for DMs</h2>
-        <ul className="list-disc ml-6 text-sm text-gray-800">
-          <li>
-            <a href="https://fastcharacter.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-              Fast Character Generator
-            </a>
-          </li>
-          <li>
-            <a href="https://www.dndbeyond.com/monsters" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-              D&D Monster Lookup
-            </a>
-          </li>
-          <li>
-            <a href="https://www.gmbinder.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-              GM Binder (for homebrew rules and PDFs)
-            </a>
-          </li>
-        </ul>
       </div>
     </div>
   );
