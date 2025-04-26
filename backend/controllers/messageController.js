@@ -1,64 +1,103 @@
-const express = require('express');
-const router = express.Router();
+// 📂 controllers/messageController.js
 const Message = require('../models/Message');
-const { protect } = require('../middleware/authMiddleware');
+const User = require('../models/User');
 
-// Get all messages for a campaign
-router.get('/:campaignId', protect, async (req, res) => {
-  console.log(`📨 GET /:campaignId hit for campaign ID: ${req.params.campaignId}`);
-
+// 📨 Send a message
+exports.sendMessage = async (req, res) => {
   try {
-    const messages = await Message.find({ campaignId: req.params.campaignId }).sort({ createdAt: 1 });
-    console.log("✅ Messages fetched for campaign:", messages.length);
+    const { toUsername, subject, body } = req.body;
+
+    const recipient = await User.findOne({ displayName: toUsername });
+
+    if (!recipient) {
+      console.warn(`❌ Recipient not found: ${toUsername}`);
+      return res.status(404).json({ message: 'Recipient not found' });
+    }
+
+    const newMessage = new Message({
+      sender: req.user._id,
+      recipient: recipient._id,
+      subject,
+      body,
+    });
+
+    await newMessage.save();
+
+    console.log(`✅ Message sent from ${req.user._id} to ${recipient._id}`);
+    res.status(201).json(newMessage);
+  } catch (err) {
+    console.error('❌ Error sending message:', err);
+    res.status(500).json({ message: 'Failed to send message' });
+  }
+};
+
+// 📨 Get all messages for logged-in user
+exports.getMessages = async (req, res) => {
+  try {
+    const messages = await Message.find({ recipient: req.user._id })
+      .populate('sender', 'displayName')
+      .sort({ sentAt: -1 });
+
     res.json(messages);
   } catch (err) {
     console.error('❌ Error fetching messages:', err);
     res.status(500).json({ message: 'Failed to fetch messages' });
   }
-});
+};
 
-// Send a new message
-router.post('/:campaignId', protect, async (req, res) => {
-  console.log(`📨 POST /:campaignId hit to send a new message for campaign ID: ${req.params.campaignId}`);
-
+// 📨 Count unread messages
+exports.getUnreadMessagesCount = async (req, res) => {
   try {
-    const newMessage = new Message({
-      campaignId: req.params.campaignId,
-      sender: req.user._id,
-      content: req.body.content,
+    const count = await Message.countDocuments({
+      recipient: req.user._id,
+      isRead: false,
     });
 
-    await newMessage.save();
-    console.log("✅ New message sent by user:", req.user._id);
-    res.status(201).json(newMessage);
+    res.json({ count });
   } catch (err) {
-    console.error('❌ Error creating message:', err);
-    res.status(400).json({ message: 'Failed to create message' });
+    console.error('❌ Error counting unread messages:', err);
+    res.status(500).json({ message: 'Failed to count messages' });
   }
-});
+};
 
-// Mark message as read
-router.patch('/:messageId/read', protect, async (req, res) => {
-  console.log(`📨 PATCH /:messageId/read hit to mark message ID: ${req.params.messageId} as read`);
-
+// 📨 Mark a message as read
+exports.markMessageAsRead = async (req, res) => {
   try {
-    const message = await Message.findByIdAndUpdate(
-      req.params.messageId,
-      { $addToSet: { readBy: req.user._id } },
+    const message = await Message.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        recipient: req.user._id,
+      },
+      { isRead: true },
       { new: true }
     );
 
     if (!message) {
-      console.log("❌ Message not found:", req.params.messageId);
       return res.status(404).json({ message: 'Message not found' });
     }
 
-    console.log("✅ Message marked as read by user:", req.user._id);
     res.json(message);
   } catch (err) {
     console.error('❌ Error marking message as read:', err);
-    res.status(400).json({ message: 'Failed to update message' });
+    res.status(500).json({ message: 'Failed to update message' });
   }
-});
+};
 
-module.exports = router;
+// 📨 Delete a message
+exports.deleteMessage = async (req, res) => {
+  try {
+    const message = await Message.findOneAndDelete({
+      _id: req.params.id,
+      recipient: req.user._id,
+    });
+
+    if (!message) {
+      return res.status(404).json({ message: 'Message not found' });
+    }
+
+    res.json({ message: 'Message deleted' });
+  } catch (err) {
+    console.error('❌ Error deleting message:', err);
+    res.status(500).json({ message: 'Failed to delete message' });
+  }
+};

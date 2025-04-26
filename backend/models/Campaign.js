@@ -1,9 +1,5 @@
 const mongoose = require('mongoose');
 
-const generateInviteCode = () => {
-  return Math.random().toString(36).substring(2, 8).toUpperCase(); // 6-char alphanumeric
-};
-
 const campaignSchema = new mongoose.Schema({
   imageUrl: {
     type: String, // relative path like "/uploads/campaigns/abc123.jpg"
@@ -11,6 +7,10 @@ const campaignSchema = new mongoose.Schema({
   mapImage: {
     type: String, // base64 string for the live tabletop map
     default: null,
+  },
+  activeMap: {
+    type: String, // Store the path for the active map
+    default: '',   // Empty string initially, will be populated once a map is uploaded
   },
   title: {
     type: String,

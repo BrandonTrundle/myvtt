@@ -5,7 +5,7 @@ export function useCampaignData(campaignId, setCampaign) {
     const fetchCampaign = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${process.env.REACT_APP_API_BASE}/api/campaigns/${campaignId}`, {
+        const res = await fetch(`${process.env.REACT_APP_API_BASE}/campaigns/${campaignId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

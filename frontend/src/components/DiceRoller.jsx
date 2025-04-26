@@ -41,7 +41,7 @@ const DiceRoller = ({ onRoll }) => {
                 }`}
               >
                 <img
-                  src={`/${die}logo.png`}
+                  src={`/dice_images/${die}logo.png`}
                   alt={die}
                   className="w-12 h-12 object-contain mx-auto"
                 />

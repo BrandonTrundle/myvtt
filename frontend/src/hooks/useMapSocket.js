@@ -1,27 +1,31 @@
-// 📂 frontend/hooks/useMapSocket.js
 import { useEffect } from 'react';
-import { SOCKET_EVENTS } from '../constants/SOCKET_EVENTS';
 import { useSocket } from '../context/SocketContext';
+import { SOCKET_EVENTS } from '../constants/SOCKET_EVENTS';
 
-export function useMapSocket(campaignId, onMapUploaded, onMapSettings) {
-  const { socket, isConnected, joinCampaign } = useSocket();
+export const useMapSocket = (campaignId, onMapUrlChange, onSettingsChange) => {
+  const { socket } = useSocket();
 
   useEffect(() => {
-    if (!socket || !isConnected || !campaignId) return;
+    if (!socket || !campaignId) return;
 
-    joinCampaign(campaignId);
+    const handleMapSettingsUpdated = (settings) => {
+      onSettingsChange(settings);
+    };
 
-    socket.on(SOCKET_EVENTS.MAP_UPLOADED, ({ imageUrl }) => {
-      if (onMapUploaded) onMapUploaded(imageUrl);
-    });
+    const handleMapUpdated = (data) => {
+      if (data?.activeMap) {
+        onMapUrlChange(data.activeMap);
+      } else {
+        console.warn('⚠️ Received MAP_UPDATED without activeMap:', data);
+      }
+    };
 
-    socket.on(SOCKET_EVENTS.MAP_SETTINGS_UPDATED, ({ zoom, showGrid }) => {
-      if (onMapSettings) onMapSettings({ zoom, showGrid });
-    });
+    socket.on(SOCKET_EVENTS.MAP_SETTINGS_UPDATED, handleMapSettingsUpdated);
+    socket.on(SOCKET_EVENTS.MAP_UPDATED, handleMapUpdated);
 
     return () => {
-      socket.off(SOCKET_EVENTS.MAP_UPLOADED);
-      socket.off(SOCKET_EVENTS.MAP_SETTINGS_UPDATED);
+      socket.off(SOCKET_EVENTS.MAP_SETTINGS_UPDATED, handleMapSettingsUpdated);
+      socket.off(SOCKET_EVENTS.MAP_UPDATED, handleMapUpdated);
     };
-  }, [socket, isConnected, campaignId, onMapUploaded, onMapSettings]);
-}
+  }, [socket, campaignId, onMapUrlChange, onSettingsChange]);
+};

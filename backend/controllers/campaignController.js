@@ -135,3 +135,55 @@ exports.deleteCampaign = async (req, res) => {
     res.status(500).json({ message: 'Server error deleting campaign.' });
   }
 };
+
+exports.getCampaignById = async (req, res) => {
+  try {
+    const campaign = await Campaign.findById(req.params.id)
+      .populate('gm', 'displayName avatarUrl')
+      .populate('players', 'displayName avatarUrl');
+
+    if (!campaign) {
+      return res.status(404).json({ message: 'Campaign not found' });
+    }
+
+    res.json(campaign);
+  } catch (err) {
+    console.error('❌ Error getting campaign by ID:', err);
+    res.status(500).json({ message: 'Server error fetching campaign.' });
+  }
+};
+
+// 📂 controllers/campaignController.js
+
+exports.joinCampaignByCode = async (req, res) => {
+  try {
+    const { code } = req.params;
+    const userId = req.user._id;
+
+    const campaign = await Campaign.findOne({ inviteCode: code });
+
+    if (!campaign) {
+      return res.status(404).json({ message: 'Invalid invite code.' });
+    }
+
+    // Check if already GM
+    if (String(campaign.gm) === String(userId)) {
+      return res.status(400).json({ message: 'You are the GM of this campaign.' });
+    }
+
+    // Check if already a player
+    if (campaign.players.includes(userId)) {
+      return res.status(400).json({ message: 'You are already a player in this campaign.' });
+    }
+
+    // Add player
+    campaign.players.push(userId);
+    await campaign.save();
+
+    res.json({ message: 'Successfully joined campaign!', campaign });
+  } catch (err) {
+    console.error('❌ Error joining campaign by code:', err);
+    res.status(500).json({ message: 'Server error joining campaign.' });
+  }
+};
+

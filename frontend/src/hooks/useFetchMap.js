@@ -8,14 +8,19 @@ export function useFetchMap(campaignId, setMapUrl) {
       try {
         const token = localStorage.getItem('token');
         const res = await axios.get(
-          `${process.env.REACT_APP_API_BASE}/api/campaigns/${campaignId}`,
+          `${process.env.REACT_APP_API_BASE}/campaigns/${campaignId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        if (res.data?.mapUrl) setMapUrl(res.data.mapUrl);
+
+        if (res.data?.activeMap) {
+          setMapUrl(res.data.activeMap); // ✅ use activeMap, not mapUrl
+        } else {
+          console.warn('🕳️ No active map found.');
+        }
       } catch (err) {
-        console.warn('🕳️ No map or error fetching');
+        console.warn('❌ Error fetching map:', err);
       }
     };
 

@@ -20,29 +20,16 @@ const MessageForm = ({ onSuccess }) => {
     e.preventDefault();
     setSending(true);
     setStatus(null);
-
+  
     try {
-      const res = await apiFetch('/messages', {
+      await apiFetch('/messages', {
         method: 'POST',
         body: JSON.stringify(formData),
       });
-
-      const text = await res.text();
-      let data;
-      try {
-        data = JSON.parse(text); // ✅ Only try if it's real JSON
-      } catch (err) {
-        console.warn("⚠️ Could not parse JSON. Response was:", text);
-        return; // Or handle fallback logic here
-      }
-
-      if (res.ok) {
-        setStatus('✅ Message sent!');
-        setFormData({ toUsername: '', subject: '', body: '' });
-        onSuccess?.(); // Optional chaining
-      } else {
-        setStatus(data.message || '❌ Error sending message.');
-      }
+  
+      setStatus('✅ Message sent!');
+      setFormData({ toUsername: '', subject: '', body: '' });
+      onSuccess?.(); // Optional chaining
     } catch (err) {
       console.error('❌ Failed to send message:', err);
       setStatus('Something went wrong.');
@@ -50,6 +37,7 @@ const MessageForm = ({ onSuccess }) => {
       setSending(false);
     }
   }, [formData, onSuccess]);
+  
 
   return (
     <form

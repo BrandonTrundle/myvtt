@@ -1,45 +1,27 @@
-const express = require('express');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-const router = express.Router();
-const { protect } = require('../middleware/authMiddleware');
+const Campaign = require('../models/Campaign');
 
-// Set up Multer storage for campaign maps
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const dir = path.join(__dirname, '../uploads/campaigns');
-    fs.mkdirSync(dir, { recursive: true });
-    console.log(`✅ Directory ensured: ${dir}`);
-    cb(null, dir);
-  },
-  filename: function (req, file, cb) {
-    const ext = path.extname(file.originalname);
-    const filename = `image-${Date.now()}-${Math.floor(Math.random() * 1000000)}${ext}`;
-    console.log("📄 Generated filename:", filename);
-    cb(null, filename);
-  },
-});
-
-const upload = multer({ storage });
-
-// Upload map image
-router.post('/upload', protect, upload.single('map'), async (req, res) => {
-  console.log("📨 POST /upload - Map image");
-
+exports.uploadMap = async (req, res) => {
   try {
+    const campaignId = req.params.campaignId;
+
     if (!req.file) {
-      console.log("❌ No map file uploaded");
-      return res.status(400).json({ message: 'No file uploaded' });
+      return res.status(400).json({ message: 'No map file uploaded.' });
     }
 
-    const fileUrl = `/uploads/campaigns/${req.file.filename}`;
-    console.log("✅ Map uploaded:", fileUrl);
-    res.status(201).json({ fileUrl });
-  } catch (err) {
-    console.error('❌ Upload failed:', err);
-    res.status(500).json({ message: 'Failed to upload map' });
-  }
-});
+    const campaign = await Campaign.findById(campaignId);
+    if (!campaign) {
+      return res.status(404).json({ message: 'Campaign not found.' });
+    }
 
-module.exports = router;
+    // ✅ Save the uploaded file path to campaign.activeMap
+    campaign.activeMap = `/uploads/maps/${req.file.filename}`;
+    await campaign.save();
+
+    console.log(`✅ Map uploaded and active for campaign: ${campaignId}`);
+    console.log(`✅ Map uploaded: ${req.file.filename}, size: ${req.file.size} bytes`);
+    res.status(200).json({ activeMap: campaign.activeMap });
+  } catch (err) {
+    console.error('❌ Error uploading map:', err);
+    res.status(500).json({ message: 'Server error uploading map.' });
+  }
+};

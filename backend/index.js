@@ -15,20 +15,17 @@ dotenv.config();
 const authRoutes = require('./controllers/authController');
 const userRoutes = require('./routes/user');
 const campaignRoutes = require('./routes/campaign');
-const mapRoutes = require('./controllers/mapController');
-const messageRoutes = require('./controllers/messageController');
+const mapRoutes = require('./routes/map');
+const messageRoutes = require('./routes/message');
 
-// Allowed origins for dev/local network
 const allowedOrigins = [
   'http://localhost:3000',
-  'http://192.168.0.29:3000', // local network
-  'http://0.0.0.0:3000',       // optional
+  'http://192.168.0.29:3000',
+  'http://0.0.0.0:3000',
 ];
 
-// Init express app
 const app = express();
 
-// Middleware
 app.use(express.json());
 app.use(cors({
   origin: function (origin, callback) {
@@ -46,21 +43,19 @@ app.use(cors({
 app.use(helmet());
 app.use(morgan('dev'));
 
-// Static file serving with correct CORP header
 app.use('/uploads', (req, res, next) => {
   console.log('📤 Serving static files from /uploads');
   res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
   next();
 }, express.static(path.join(__dirname, 'uploads')));
 
-// API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/campaigns', campaignRoutes);
 app.use('/api/maps', mapRoutes);
 app.use('/api/messages', messageRoutes);
 
-// MongoDB connection
+// MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB Connected'))
   .catch((err) => {
@@ -68,7 +63,6 @@ mongoose.connect(process.env.MONGO_URI)
     process.exit(1);
   });
 
-// Create HTTP + WebSocket server
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -77,16 +71,82 @@ const io = new Server(server, {
   }
 });
 
-// WebSocket handling
+// ✅ WebSocket Logic
 io.on('connection', (socket) => {
   console.log('📡 New WebSocket connection:', socket.id);
+
+  socket.on('debug_ping', (data) => {
+    console.log('🐛 DEBUG PING received from client:', data);
+    socket.emit('debug_pong', { message: 'Pong from server!' });
+  });
+
+  socket.on('join_campaign', (campaignId) => {
+    if (campaignId) {
+      socket.join(campaignId);
+      console.log(`✅ ${socket.id} joined campaign room ${campaignId}`);
+    } else {
+      console.warn('⚠️ join_campaign called without campaignId');
+    }
+  });
+
+  socket.on('chat_message', (data) => {
+    console.log('📥 Server received chat_message:', data);
+
+    const { campaignId, username, message, type, diceType, rolls, isNat20, isNat1 } = data;
+    if (!campaignId || !message) {
+      console.warn('⚠️ Invalid chat message payload:', data);
+      return;
+    }
+
+    console.log(`📤 Server relaying to room ${campaignId}:`, {
+      username,
+      message,
+      type,
+      diceType,
+      rolls,
+      isNat20,
+      isNat1,
+    });
+
+    io.to(campaignId).emit('chat_message', {
+      username,
+      message,
+      type,
+      diceType,
+      rolls,
+      isNat20,
+      isNat1,
+    });
+  });
+
+  socket.on('map_settings_updated', (data) => {
+    const { campaignId, ...settings } = data;
+    if (!campaignId) return;
+
+    io.to(campaignId).emit('map_settings_updated', {
+      ...settings,
+      campaignId,
+    });
+    console.log(`🗺️ Map update relayed to ${campaignId}:`, settings);
+  });
+
+  socket.on('map_updated', (data) => {
+    const { campaignId, activeMap } = data;
+    if (!campaignId || !activeMap) {
+      console.warn('⚠️ Invalid MAP_UPDATED payload:', data);
+      return;
+    }
+
+    console.log(`📡 Server received MAP_UPDATED for ${campaignId}:`, activeMap);
+
+    io.to(campaignId).emit('map_updated', { activeMap });
+  });
 
   socket.on('disconnect', () => {
     console.log('🔌 WebSocket disconnected:', socket.id);
   });
 });
 
-// Start the server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);

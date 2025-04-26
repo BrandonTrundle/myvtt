@@ -17,11 +17,10 @@ import MapGrid from '../components/MapGrid';
 import { useChatSocket } from '../hooks/useChatSocket';
 import { useCampaignData } from '../hooks/useCampaignData';
 
-
 const Tabletop = () => {
   const { campaignId } = useParams();
   const { user } = useContext(UserContext);
-  const { socket } = useSocket();
+  const { socket, joinCampaign } = useSocket();
 
   const [campaign, setCampaign] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -31,17 +30,34 @@ const Tabletop = () => {
   // 📦 Load campaign data
   useCampaignData(campaignId, setCampaign);
 
-  // 🔁 Socket: listen to incoming messages
-  useChatSocket(campaignId, (msg) => setMessages((prev) => [...prev, msg]));
+  // ✅ Stable callback to avoid duplicate listeners
+  const handleIncomingMessage = useCallback(
+    (msg) => setMessages((prev) => [...prev, msg]),
+    []
+  );
+
+  // 🔁 Listen to incoming messages
+  useChatSocket(campaignId, handleIncomingMessage);
 
   // 👑 Determine GM status
   const isGM = user && campaign && (
     user._id === campaign.gm || user._id === campaign.gm?._id
   );
 
-  // 👁 Auto-scroll chat to bottom
+  // 🧠 Join socket room
   useEffect(() => {
-    chatRef.current?.scrollTo({ top: chatRef.current.scrollHeight, behavior: 'smooth' });
+    if (socket && campaignId) {
+      joinCampaign(campaignId);
+      console.log(`📡 Joined socket room for campaign ${campaignId}`);
+    }
+  }, [socket, campaignId, joinCampaign]);
+
+  // 👁 Auto-scroll chat
+  useEffect(() => {
+    chatRef.current?.scrollTo({
+      top: chatRef.current.scrollHeight,
+      behavior: 'smooth',
+    });
   }, [messages]);
 
   // 📤 Chat message sender
@@ -50,6 +66,13 @@ const Tabletop = () => {
     if (!input.trim()) return;
 
     const username = user?.username || user?.displayName || 'Unknown Player';
+
+    console.log('📤 Sending chat message:', {
+      campaignId,
+      username,
+      message: input.trim(),
+      type: 'chat',
+    });
 
     socket.emit(SOCKET_EVENTS.CHAT_MESSAGE, {
       campaignId,
@@ -86,15 +109,6 @@ const Tabletop = () => {
     });
   }, [campaignId, socket, user]);
 
-  // 🐞 Dev logs
-  useEffect(() => {
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('👤 User:', user);
-      console.log('🎯 Campaign:', campaign);
-      console.log('🧠 isGM:', isGM);
-    }
-  }, [user, campaign]);
-
   return (
     <div className="w-screen h-screen flex bg-gray-900 text-white overflow-hidden">
       {/* Left Sidebar */}
@@ -106,6 +120,9 @@ const Tabletop = () => {
           <li>📐 Ruler</li>
           <li>🎯 Targeting</li>
         </ul>
+        <div className="mt-8">
+          <DiceRoller onRoll={handleRoll} />
+        </div>
       </div>
 
       {/* Tabletop Canvas */}
@@ -147,7 +164,12 @@ const Tabletop = () => {
             );
           })}
         </div>
-
+        <button
+          onClick={() => socket.emit('debug_ping', { message: 'Ping from Tabletop!' })}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded mt-4"
+        >
+          Send Debug Ping
+        </button>
         <form onSubmit={handleSend} className="flex gap-2">
           <input
             type="text"
@@ -164,8 +186,6 @@ const Tabletop = () => {
           </button>
         </form>
       </div>
-
-      <DiceRoller onRoll={handleRoll} />
     </div>
   );
 };
