@@ -1,11 +1,33 @@
-const express = require('express');
-const router = express.Router();
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-const User = require('../models/User');
-const { protect } = require('../middleware/authMiddleware');
+/**
+ * Author: Brandon Trundle
+ * File Name: authController.js
+ * Date-Created: 4/26/2025
+ * 
+ * File Overview:
+ * Handles user authentication and onboarding logic for ArcanaTable.
+ * Provides API endpoints for:
+ *  - Signing up new users
+ *  - Logging in existing users
+ *  - Retrieving authenticated user profiles
+ *  - Completing onboarding information
+ */
 
-// Register a new user
+
+const express = require('express');
+const router = express.Router(); // Creates a new router object for handling routes
+const jwt = require('jsonwebtoken'); // Used to sign and verify JWT tokens for authentication
+const bcrypt = require('bcrypt'); // Used to hash and compare passwords securely
+const User = require('../models/User'); // Mongoose model for interacting with User collection
+const { protect } = require('../middleware/authMiddleware'); // Middleware to protect private routes via JWT validation
+
+/**
+ * @route   POST /signup
+ * @desc    Registers a new user with email, password, firstName, and lastName.
+ *          Hashes password via Mongoose pre-save hook before saving to database.
+ * @access  Public
+ * @param   {Object} req - Express request object containing user signup details.
+ * @param   {Object} res - Express response object used to send success or error response.
+ */
 router.post('/signup', async (req, res) => {
   console.log("📨 POST /signup called");
 
@@ -41,7 +63,14 @@ router.post('/signup', async (req, res) => {
   }
 });
 
-// Login a user
+/**
+ * @route   POST /login
+ * @desc    Authenticates an existing user using email and password.
+ *          Returns a JWT token and user profile if credentials are valid.
+ * @access  Public
+ * @param   {Object} req - Express request object containing login credentials.
+ * @param   {Object} res - Express response object used to send user data or error message.
+ */
 router.post('/login', async (req, res) => {
   console.log("📨 POST /login called");
 
@@ -92,7 +121,13 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Get current authenticated user
+/**
+ * @route   GET /me
+ * @desc    Retrieves the profile of the currently authenticated user.
+ * @access  Private (requires valid JWT)
+ * @param   {Object} req - Express request object containing user ID from token.
+ * @param   {Object} res - Express response object used to send user profile data.
+ */
 router.get('/me', protect, async (req, res) => {
   console.log("📨 GET /me called");
 
@@ -113,7 +148,14 @@ router.get('/me', protect, async (req, res) => {
   }
 });
 
-// Update onboarding fields
+/**
+ * @route   PATCH /onboarding
+ * @desc    Updates onboarding fields for the currently authenticated user.
+ *          Marks onboardingComplete as true after successful update.
+ * @access  Private (requires valid JWT)
+ * @param   {Object} req - Express request object containing onboarding fields.
+ * @param   {Object} res - Express response object used to send updated user data.
+ */
 router.patch('/onboarding', protect, async (req, res) => { // ✅ FIXED
   console.log("📨 PATCH /onboarding called");
 

@@ -1,8 +1,43 @@
-// models/Character.js
+/**
+ * Author: Brandon Trundle
+ * File Name: Character.js
+ * Date-Created: 4/26/2025
+ * 
+ * File Overview:
+ * Defines the Mongoose schema and model for player characters in ArcanaTable.
+ * Represents comprehensive 5e Dungeons & Dragons character sheet data including:
+ * - Core character information (name, class, race, level, etc.)
+ * - Ability scores, saving throws, combat stats
+ * - Skills, spellcasting, equipment, treasure, and personality traits
+ * - Metadata including creator user ID and system information
+ * 
+ * Supports both detailed structured spellcasting and simplified text-area-based spell blocks.
+ */
 
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+const mongoose = require('mongoose'); // Mongoose library for MongoDB object modeling
+const { Schema } = mongoose; // Destructured Schema constructor for defining models
 
+/**
+ * Mongoose schema defining the structure of a Character document.
+ * 
+ * Major Sections:
+ * - Identity: Basic information like character name, player name, class, level, and background
+ * - Appearance: Physical and cosmetic attributes
+ * - Ability Scores: Core STR, DEX, CON, INT, WIS, CHA stats and modifiers
+ * - Saving Throws: Individual saves with proficiency flags
+ * - Combat Stats: Armor class (AC), initiative, speed, and hit points
+ * - Death Saves: Current status of death save successes and failures
+ * - Attacks: List of attack actions with details
+ * - Skills: List of skills with stat association and proficiency
+ * - Proficiency/Inspiration: Global modifiers
+ * - Spellcasting: Spell slots and detailed spell organization
+ * - Allies and Organizations: Friends, organizations, and symbols
+ * - Equipment and Treasure: Inventory, coins, and magic items
+ * - Personality: Traits, ideals, bonds, flaws, and features
+ * - Metadata: System name, backstory, public/private flag, creator reference
+ * 
+ * Includes automatic timestamping for creation and updates.
+ */
 const CharacterSchema = new Schema(
   {
     // Core identity

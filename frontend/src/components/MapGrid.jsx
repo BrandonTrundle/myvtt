@@ -1,12 +1,41 @@
-// 📂 frontend/components/MapGrid.jsx
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useSocket } from '../context/SocketContext';
-import { SOCKET_EVENTS } from '../constants/SOCKET_EVENTS';
-import { useMapSocket } from '../hooks/useMapSocket';
-import { useFetchMap } from '../hooks/useFetchMap';
-import { STATIC_BASE } from '../utils/api';
+/**
+ * Author: Brandon Trundle
+ * File Name: MapGrid.jsx
+ * Date-Created: 4/26/2025
+ * 
+ * File Overview:
+ * Displays and manages the live campaign map for ArcanaTable sessions.
+ * Supports real-time updates via WebSockets, manual uploads by the GM,
+ * zoom controls, and toggling a grid overlay for players.
+ * 
+ * Features:
+ * - GM can upload a new map image to the server.
+ * - All users receive real-time map updates over WebSocket.
+ * - Zoom in/out and show/hide grid toggles.
+ * - Grid overlay to assist with positioning on maps.
+ * 
+ * Props:
+ * - campaign (object): Campaign object containing the campaign's current map data.
+ * - isGM (boolean): True if the current user is the GM of the campaign.
+ */
 
+import React, { useState } from 'react'; // React library and core hooks
+import axios from 'axios'; // Promise-based HTTP client for making API requests
+import { useSocket } from '../context/SocketContext'; // Custom hook for accessing the current Socket.IO connection
+import { SOCKET_EVENTS } from '../constants/SOCKET_EVENTS'; // Centralized socket event names
+import { useMapSocket } from '../hooks/useMapSocket'; // Custom hook to handle incoming map socket events
+import { useFetchMap } from '../hooks/useFetchMap'; // Custom hook to fetch saved campaign map on load
+import { STATIC_BASE } from '../utils/api'; // Base URL for serving static assets
+
+/**
+ * MapGrid Component
+ * 
+ * Handles the display, upload, zoom, and real-time updating of the campaign map.
+ * Provides different capabilities depending on whether the user is the GM or a player.
+ * 
+ * @param {Object} campaign - Campaign data object containing current map state.
+ * @param {boolean} isGM - Whether the user is the Game Master (GM).
+ */
 const MapGrid = ({ campaign, isGM }) => {
   const [mapUrl, setMapUrl] = useState(null);
   const [zoom, setZoom] = useState(1);
@@ -15,7 +44,11 @@ const MapGrid = ({ campaign, isGM }) => {
   const { socket } = useSocket();
   const campaignId = campaign?._id;
 
-  // 🧠 Handle incoming socket map updates
+/**
+ * Subscribe to real-time socket events:
+ * - MAP_UPDATED: Update map image for all players.
+ * - MAP_SETTINGS_UPDATED: Sync zoom and grid visibility settings.
+ */
   useMapSocket(
     campaignId,
     (imageUrl) => {
@@ -29,7 +62,10 @@ const MapGrid = ({ campaign, isGM }) => {
     }
   );
 
-  // 🧠 Fetch saved map when page loads
+/**
+ * Fetches the saved campaign map when the component first loads.
+ * Sets the map URL if a map is found.
+ */
   useFetchMap(campaignId, (fetchedMapUrl) => {
     if (fetchedMapUrl) {
       const fullUrl = `${STATIC_BASE}${fetchedMapUrl}`;
@@ -38,8 +74,10 @@ const MapGrid = ({ campaign, isGM }) => {
     }
   });
   
-
-  // 🧠 GM uploads new map
+/**
+ * Handles uploading a new map image file to the server (GM only).
+ * Emits a real-time MAP_UPDATED event to all connected clients.
+ */
   const handleFileChange = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -83,7 +121,11 @@ const MapGrid = ({ campaign, isGM }) => {
     }
   };
   
-  // 🧠 Handle zoom and grid toggle
+/**
+ * Emits updated zoom and/or grid visibility settings to connected clients.
+ * 
+ * @param {Object} newSettings - Partial settings to broadcast ({ zoom, showGrid }).
+ */
   const broadcastSettings = (newSettings) => {
     if (socket && isGM) {
       socket.emit(SOCKET_EVENTS.MAP_SETTINGS_UPDATED, {
@@ -94,12 +136,21 @@ const MapGrid = ({ campaign, isGM }) => {
     }
   };
 
+/**
+ * Handles zooming the map in or out.
+ * Constrains zoom between 0.5x and 3x.
+ * 
+ * @param {number} delta - Amount to adjust zoom by (positive or negative).
+ */
   const handleZoomChange = (delta) => {
     const newZoom = Math.min(3, Math.max(0.5, zoom + delta));
     setZoom(newZoom);
     broadcastSettings({ zoom: newZoom });
   };
 
+/**
+ * Toggles the visibility of the map grid overlay.
+ */
   const toggleGrid = () => {
     const newGridState = !showGrid;
     setShowGrid(newGridState);

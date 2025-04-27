@@ -1,21 +1,59 @@
-import React, { useState, useCallback } from 'react';
-import { apiFetch } from '../utils/api';
+/**
+ * Author: Brandon Trundle
+ * File Name: MessageForm.jsx
+ * Date-Created: 4/26/2025
+ * 
+ * File Overview:
+ * Displays a form for sending in-app messages to other users on ArcanaTable.
+ * Handles form input, form submission, API interaction, success feedback, and error states.
+ * 
+ * Props:
+ * - onSuccess (function, optional): Callback triggered after a successful message send.
+ */
 
+import React, { useState, useCallback } from 'react'; // React core library and hooks
+import { apiFetch } from '../utils/api'; // Utility for API interactions
+
+/**
+ * MessageForm Component
+ * 
+ * Renders a form allowing users to send messages by specifying:
+ * - Recipient username
+ * - Subject
+ * - Message body
+ * 
+ * Handles:
+ * - Input state management
+ * - Sending message data to backend API
+ * - Loading and success/error feedback
+ * 
+ * @param {Function} onSuccess - Optional callback after successful form submission.
+ */
 const MessageForm = ({ onSuccess }) => {
   const [formData, setFormData] = useState({
     toUsername: '',
     subject: '',
     body: '',
   });
-
   const [status, setStatus] = useState(null);
   const [sending, setSending] = useState(false);
 
+  /**
+ * Updates form field values based on user input.
+ * 
+ * @param {Event} e - Input change event.
+ */
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   }, []);
 
+/**
+ * Submits the message form to the backend API.
+ * Resets form on success and calls the onSuccess callback if provided.
+ * 
+ * @param {Event} e - Form submit event.
+ */
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     setSending(true);
@@ -38,7 +76,6 @@ const MessageForm = ({ onSuccess }) => {
     }
   }, [formData, onSuccess]);
   
-
   return (
     <form
       onSubmit={handleSubmit}

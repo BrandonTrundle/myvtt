@@ -1,22 +1,46 @@
-// 📂 frontend/pages/Tabletop.jsx
-import React, {
-  useState,
-  useRef,
-  useContext,
-  useCallback,
-  useEffect,
-} from 'react';
-import { useParams } from 'react-router-dom';
-import { UserContext } from '../context/UserContext';
-import { useSocket } from '../context/SocketContext';
-import { SOCKET_EVENTS } from '../constants/SOCKET_EVENTS';
+/**
+ * Author: Brandon Trundle
+ * File Name: Tabletop.jsx
+ * Date-Created: 4/26/2025
+ * 
+ * File Overview:
+ * Renders the virtual tabletop interface for ArcanaTable campaigns.
+ * Handles real-time chat, dice rolling, and battle map display using WebSockets.
+ * 
+ * Behavior:
+ * - Joins the campaign's socket.io room on load.
+ * - Loads campaign data via REST API.
+ * - Sends and receives chat messages and dice roll results via WebSocket.
+ * - Displays a campaign map (with GM privileges if applicable).
+ * - Updates UI reactively as campaign/chat state changes.
+ * 
+ * Features:
+ * - Chat sidebar with auto-scrolling.
+ * - Dice roller integrated with real-time messaging.
+ * - Map grid with GM/player view separation.
+ * 
+ * Props:
+ * - None (uses hooks internally to retrieve context and URL params).
+ */
 
-import DiceRoller from '../components/DiceRoller';
-import MapGrid from '../components/MapGrid';
+import React, { useState, useRef, useContext, useCallback, useEffect } from 'react'; // React imports for state management, refs, context, lifecycle, and callbacks
+import { useParams } from 'react-router-dom'; // React Router hook for accessing URL parameters
+import { UserContext } from '../context/UserContext'; // Context providing user authentication data
+import { useSocket } from '../context/SocketContext'; // Context providing socket.io real-time communication
+import { SOCKET_EVENTS } from '../constants/SOCKET_EVENTS'; // Socket event constants
+import DiceRoller from '../components/DiceRoller'; // Component for rolling dice and sending roll events
+import MapGrid from '../components/MapGrid'; // Component for rendering the campaign's battle map
+import { useChatSocket } from '../hooks/useChatSocket'; // Hook for handling chat socket communication
+import { useCampaignData } from '../hooks/useCampaignData'; // Hook for loading and managing campaign data
 
-import { useChatSocket } from '../hooks/useChatSocket';
-import { useCampaignData } from '../hooks/useCampaignData';
-
+/**
+ * Tabletop Page Component
+ * 
+ * Renders the ArcanaTable virtual tabletop session, including chat, dice rolling, and the map grid.
+ * Manages all relevant real-time events, WebSocket connections, and user interactions.
+ * 
+ * @returns {JSX.Element} - The full tabletop interface layout.
+ */
 const Tabletop = () => {
   const { campaignId } = useParams();
   const { user } = useContext(UserContext);
@@ -27,24 +51,47 @@ const Tabletop = () => {
   const [input, setInput] = useState('');
   const chatRef = useRef(null);
 
-  // 📦 Load campaign data
+/**
+ * Fetches campaign data from server and updates local state.
+ * 
+ * @param {string} campaignId - The ID of the current campaign.
+ * @param {Function} setCampaign - React state setter to store campaign data.
+ */
   useCampaignData(campaignId, setCampaign);
 
-  // ✅ Stable callback to avoid duplicate listeners
+/**
+ * Callback to append a new incoming message to the chat log.
+ * 
+ * @param {Object} msg - The chat message object.
+ */
   const handleIncomingMessage = useCallback(
     (msg) => setMessages((prev) => [...prev, msg]),
     []
   );
 
-  // 🔁 Listen to incoming messages
+/**
+ * Subscribes to chat messages for the given campaign using WebSocket.
+ * 
+ * @param {string} campaignId - Current campaign ID.
+ * @param {Function} handleIncomingMessage - Handler for incoming chat messages.
+ */
   useChatSocket(campaignId, handleIncomingMessage);
 
-  // 👑 Determine GM status
+/**
+ * Checks if the current user is the GM (Game Master) for this campaign.
+ * 
+ * @returns {boolean} - True if user is GM, otherwise false.
+ */
   const isGM = user && campaign && (
     user._id === campaign.gm || user._id === campaign.gm?._id
   );
 
-  // 🧠 Join socket room
+/**
+ * Joins the socket.io room for the current campaign.
+ * 
+ * @param {string} campaignId - Current campaign ID.
+ * @param {Socket} socket - Active socket.io client connection.
+ */
   useEffect(() => {
     if (socket && campaignId) {
       joinCampaign(campaignId);
@@ -52,7 +99,9 @@ const Tabletop = () => {
     }
   }, [socket, campaignId, joinCampaign]);
 
-  // 👁 Auto-scroll chat
+/**
+ * Auto-scrolls the chat window to bottom whenever new messages arrive.
+ */
   useEffect(() => {
     chatRef.current?.scrollTo({
       top: chatRef.current.scrollHeight,
@@ -60,7 +109,11 @@ const Tabletop = () => {
     });
   }, [messages]);
 
-  // 📤 Chat message sender
+ /**
+ * Sends a chat message via socket.io to the current campaign room.
+ * 
+ * @param {Event} e - Form submit event.
+ */
   const handleSend = useCallback((e) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -84,7 +137,14 @@ const Tabletop = () => {
     setInput('');
   }, [campaignId, input, socket, user]);
 
-  // 🎲 Dice roll handler
+/**
+ * Handles dice roll, plays sound effect, and emits roll result via socket.
+ * 
+ * @param {Object} params
+ * @param {string} params.dice - Dice type string (e.g., "d20").
+ * @param {number} params.quantity - Number of dice rolled.
+ * @param {number} params.modifier - Modifier to apply to roll total.
+ */
   const handleRoll = useCallback(({ dice, quantity, modifier }) => {
     const username = user?.username || user?.displayName || 'Unknown Player';
     const max = parseInt(dice.replace('d', ''), 10);

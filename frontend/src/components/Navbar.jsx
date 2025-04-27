@@ -1,11 +1,45 @@
-import React, { useState, useRef, useEffect, useContext, useCallback } from 'react';
-import { Bell } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { UserContext } from '../context/UserContext';
-import { apiFetch, API_BASE } from '../utils/api';
+/**
+ * Author: Brandon Trundle
+ * File Name: Navbar.jsx
+ * Date-Created: 4/26/2025
+ * 
+ * File Overview:
+ * Displays the main navigation bar for ArcanaTable.
+ * Handles user authentication (login/logout), profile display, and navigation links.
+ * 
+ * Features:
+ * - Displays site logo and brand name
+ * - Navigation links for key pages (Play Now, Join, Marketplace, etc.)
+ * - Login form embedded in dropdown
+ * - Real-time user context updates (on login/logout)
+ * - Displays user avatar if signed in
+ * 
+ * Props: None
+ */
+
+import React, { useState, useRef, useEffect, useContext, useCallback } from 'react'; // React core library and hooks
+import { Bell } from 'lucide-react'; // Notification icon (placeholder for future notifications feature)
+import { Link, useNavigate } from 'react-router-dom'; // Router hooks and components
+import { UserContext } from '../context/UserContext'; // Global context for user authentication state
+import { apiFetch, API_BASE } from '../utils/api'; // API utility functions
+
 
 const BASE_URL = API_BASE.replace('/api', '');
 
+/**
+ * Navbar Component
+ * 
+ * Provides top-level navigation and authentication access for users.
+ * 
+ * Functionalities:
+ * - Authenticated users see their avatar and a "Sign Out" button
+ * - Unauthenticated users can open a login dropdown to sign in
+ * - Navbar links allow quick navigation across major site sections
+ * 
+ * State:
+ * - menuOpen (boolean): Whether login dropdown is open.
+ * - email, password, error: Login form state management.
+ */
 const Navbar = () => {
   const navigate = useNavigate();
   const menuRef = useRef();
@@ -16,7 +50,11 @@ const Navbar = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  // 🖱️ Close dropdown if clicked outside
+/**
+ * Closes the login dropdown menu if a click occurs outside the menu.
+ * 
+ * @param {MouseEvent} event - The mouse click event.
+ */
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -27,7 +65,15 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // 🔐 Login handler
+/**
+ * Handles user login process:
+ * - Sends login credentials to backend.
+ * - Saves token and user info to local storage.
+ * - Updates user context.
+ * - Redirects based on onboarding completion.
+ * 
+ * @param {Event} e - Form submit event.
+ */
   const handleLogin = useCallback(async (e) => {
     e.preventDefault();
     console.log("📨 Login attempt for email:", email);
@@ -70,7 +116,12 @@ const Navbar = () => {
     }
   }, [email, password, fetchUser, navigate]);
 
-  // 🔓 Logout handler
+/**
+ * Logs the user out:
+ * - Clears token and user info from local storage.
+ * - Resets user context.
+ * - Redirects to homepage.
+ */
   const handleLogout = useCallback(() => {
     console.log("📨 Logging out...");
     localStorage.removeItem('token');

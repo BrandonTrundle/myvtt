@@ -1,14 +1,41 @@
-import React, { useState, useEffect } from 'react';
+/**
+ * Author: Brandon Trundle
+ * File Name: AttackSection.jsx
+ * Date-Created: 4/26/2025
+ * 
+ * File Overview:
+ * Displays and manages the list of attacks and spells for a character.
+ * Supports dynamic addition, editing, and syncing of attack data with the parent form.
+ */
 
+import React, { useState, useEffect } from 'react'; // React library and hooks for managing component state and side effects
+
+/**
+ * Default structure for new attack/spell rows.
+ */
 const defaultRows = [
   { name: '', atk: '', damage: '', type: '' },
   { name: '', atk: '', damage: '', type: '' },
   { name: '', atk: '', damage: '', type: '' }
 ];
 
+/**
+ * AttackSection Component
+ * 
+ * Purpose:
+ * Renders a dynamic table where users can input multiple attacks or spells,
+ * and optionally add additional notes for special cases.
+ * 
+ * Props:
+ * @param {Object} values - Object containing the character's attack values and notes.
+ * @param {Function} onChange - Callback to update the parent form state when attacks change.
+ */
 const AttackSection = ({ values, onChange }) => {
   const [rows, setRows] = useState(() => values.attacks?.length ? values.attacks : defaultRows);
 
+/**
+ * Syncs incoming attack values from the parent form to local rows state.
+ */
   useEffect(() => {
     // 🔥 Only set if the values.attacks is not the same as our rows
     if (values.attacks && JSON.stringify(values.attacks) !== JSON.stringify(rows)) {
@@ -18,6 +45,13 @@ const AttackSection = ({ values, onChange }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [values.attacks]); // (only watching the incoming values)
 
+/**
+ * Handles updating an individual attack row field.
+ * 
+ * @param {number} index - Index of the row being edited.
+ * @param {string} field - Name of the field being updated (name, atk, damage, type).
+ * @param {string} value - New value entered by the user.
+ */
   const handleChange = (index, field, value) => {
     const updated = [...rows];
     updated[index][field] = value;
@@ -29,7 +63,10 @@ const AttackSection = ({ values, onChange }) => {
       },
     });
   };
-
+  
+/**
+ * Adds a new blank row for an additional attack or spell.
+ */
   const addRow = () => {
     const updated = [...rows, { name: '', atk: '', damage: '', type: '' }];
     setRows(updated);

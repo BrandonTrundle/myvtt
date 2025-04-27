@@ -1,12 +1,37 @@
-import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { UserContext } from '../context/UserContext';
-import { apiFetch } from '../utils/api';
+/**
+ * Author: Brandon Trundle
+ * File Name: Signup.jsx
+ * Date-Created: 4/26/2025
+ * 
+ * File Overview:
+ * Displays the signup form for ArcanaTable, allowing users to create new accounts.
+ * 
+ * Behavior:
+ * - Collects user registration details (name, email, password).
+ * - Validates form data before submitting.
+ * - Sends signup request to the server and handles the server response.
+ * - Redirects users to the onboarding flow or user dashboard after successful signup.
+ * 
+ * Props:
+ * - None (page component using internal hooks and context).
+ */
 
+import React, { useState, useContext } from 'react'; // React library and hooks for state management and context access
+import { useNavigate } from 'react-router-dom'; // Hook for programmatic navigation after signup
+import { UserContext } from '../context/UserContext'; // Context providing user authentication functions
+import { apiFetch } from '../utils/api'; // API utility for sending server requests
+
+/**
+ * Signup Component
+ * 
+ * Renders the signup form for creating a new ArcanaTable account.
+ * Handles form validation, submission, and redirects after successful signup.
+ * 
+ * @returns {JSX.Element} - The rendered signup form
+ */
 const Signup = () => {
   const navigate = useNavigate();
   const { fetchUser, user } = useContext(UserContext);
-
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
@@ -16,9 +41,13 @@ const Signup = () => {
     newsletter: false,
     terms: false,
   });
-
   const [message, setMessage] = useState('');
 
+/**
+ * Updates form state when an input field or checkbox changes.
+ * 
+ * @param {Event} e - Input or checkbox change event
+ */
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     console.log(`📝 Form field change: ${name} = ${type === 'checkbox' ? checked : value}`);
@@ -28,6 +57,18 @@ const Signup = () => {
     });
   };
 
+/**
+ * Handles form submission to create a new user account.
+ * 
+ * Behavior:
+ * - Validates that passwords match and terms are agreed to.
+ * - Sends a POST request with signup information.
+ * - Stores the authentication token on success.
+ * - Redirects based on onboarding completion status.
+ * 
+ * @param {Event} e - Form submit event
+ * @throws {Error} - If server request fails
+ */
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("📡 Submitting form:", form);

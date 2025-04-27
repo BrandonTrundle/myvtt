@@ -1,8 +1,36 @@
-// 📂 controllers/messageController.js
-const Message = require('../models/Message');
-const User = require('../models/User');
+/**
+ * Author: Brandon Trundle
+ * File Name: messageController.js
+ * Date-Created: 4/26/2025
+ * 
+ * File Overview:
+ * Handles user messaging functionality for ArcanaTable.
+ * Provides endpoints to:
+ *  - Send messages between users
+ *  - Retrieve all messages for a user
+ *  - Count unread messages
+ *  - Mark messages as read
+ *  - Delete messages
+ */
 
-// 📨 Send a message
+const Message = require('../models/Message'); // Mongoose model for storing and retrieving messages
+const User = require('../models/User'); // Mongoose model for user information
+
+
+/**
+ * Sends a message from the logged-in user to a recipient by username.
+ * 
+ * @route   POST /messages/send
+ * @access  Private
+ * @param   {Object} req - Express request object containing:
+ *                         - req.body.toUsername: Recipient's display name
+ *                         - req.body.subject: Subject of the message
+ *                         - req.body.body: Body content of the message
+ * @param   {Object} res - Express response object used to send the new message data or an error.
+ * 
+ * @throws  404 if recipient is not found.
+ * @throws  500 on server error.
+ */
 exports.sendMessage = async (req, res) => {
   try {
     const { toUsername, subject, body } = req.body;
@@ -31,7 +59,16 @@ exports.sendMessage = async (req, res) => {
   }
 };
 
-// 📨 Get all messages for logged-in user
+/**
+ * Retrieves all messages sent to the logged-in user, sorted by most recent.
+ * 
+ * @route   GET /messages
+ * @access  Private
+ * @param   {Object} req - Express request object containing user ID.
+ * @param   {Object} res - Express response object used to send list of messages or error.
+ * 
+ * @throws  500 on server error.
+ */
 exports.getMessages = async (req, res) => {
   try {
     const messages = await Message.find({ recipient: req.user._id })
@@ -45,7 +82,16 @@ exports.getMessages = async (req, res) => {
   }
 };
 
-// 📨 Count unread messages
+/**
+ * Retrieves the count of unread messages for the logged-in user.
+ * 
+ * @route   GET /messages/unread
+ * @access  Private
+ * @param   {Object} req - Express request object containing user ID.
+ * @param   {Object} res - Express response object used to send unread count or error.
+ * 
+ * @throws  500 on server error.
+ */
 exports.getUnreadMessagesCount = async (req, res) => {
   try {
     // Log the recipient user ID to verify the request is correct
@@ -66,7 +112,18 @@ exports.getUnreadMessagesCount = async (req, res) => {
   }
 };
 
-// 📨 Mark a message as read
+/**
+ * Marks a specific message as read by the logged-in user.
+ * 
+ * @route   PATCH /messages/:id/read
+ * @access  Private
+ * @param   {Object} req - Express request object containing:
+ *                         - req.params.id: ID of the message to mark as read
+ * @param   {Object} res - Express response object used to send updated message data or error.
+ * 
+ * @throws  404 if message is not found.
+ * @throws  500 on server error.
+ */
 exports.markMessageAsRead = async (req, res) => {
   try {
     const message = await Message.findOneAndUpdate(
@@ -89,7 +146,18 @@ exports.markMessageAsRead = async (req, res) => {
   }
 };
 
-// 📨 Delete a message
+/**
+ * Deletes a specific message for the logged-in user.
+ * 
+ * @route   DELETE /messages/:id
+ * @access  Private
+ * @param   {Object} req - Express request object containing:
+ *                         - req.params.id: ID of the message to delete
+ * @param   {Object} res - Express response object used to confirm deletion or return error.
+ * 
+ * @throws  404 if message is not found.
+ * @throws  500 on server error.
+ */
 exports.deleteMessage = async (req, res) => {
   try {
     const message = await Message.findOneAndDelete({

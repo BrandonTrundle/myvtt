@@ -1,5 +1,29 @@
-// HitPointsBlock.jsx
+/**
+ * Author: Brandon Trundle
+ * File Name: HitPointsBlock.jsx
+ * Date-Created: 4/26/2025
+ * 
+ * File Overview:
+ * Renders the character's hit points section, including maximum hit points, current hit points,
+ * and temporary hit points during gameplay.
+ */
 
+import React from 'react'; // React library for managing form-driven UI components
+
+/**
+ * HitPointsBlock Component
+ * 
+ * Purpose:
+ * Provides input fields for recording and updating a character's hit point values.
+ * 
+ * Props:
+ * @param {Object} values - Object containing the current hit point-related values (maxhp, currenthp, temphp).
+ * @param {Function} onChange - Callback function to update the form state when hit point fields are modified.
+ * 
+ * Behavior:
+ * - Displays editable inputs for maximum hit points, current hit points, and temporary hit points.
+ * - Updates the parent form's state on user input through the `onChange` handler.
+ */
 const HitPointsBlock = ({ values, onChange }) => {
   return (
     <div className="hit-points-section">

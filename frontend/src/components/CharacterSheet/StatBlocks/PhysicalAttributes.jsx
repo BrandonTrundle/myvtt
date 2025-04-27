@@ -1,3 +1,29 @@
+/**
+ * Author: Brandon Trundle
+ * File Name: PhysicalAttributesBlock.jsx
+ * Date-Created: 4/26/2025
+ * 
+ * File Overview:
+ * Provides input fields for a character's core physical attributes,
+ * including age, height, weight, eye color, skin tone, and hair color.
+ */
+
+import React from 'react'; // React library for building reusable UI form components
+
+/**
+ * PhysicalAttributesBlock Component
+ * 
+ * Purpose:
+ * Renders editable fields for a character's physical description and basic biological stats.
+ * 
+ * Props:
+ * @param {Object} values - Object containing the current values for all physical attributes.
+ * @param {Function} onChange - Callback function to update the form state when attribute fields are changed.
+ * 
+ * Behavior:
+ * - Displays inputs organized into two rows for better layout.
+ * - Updates the parent form's state whenever a field is edited.
+ */
 const PhysicalAttributesBlock = ({ values, onChange }) => {
   return (
     <div className="physical-attributes-block">

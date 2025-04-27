@@ -1,14 +1,57 @@
-import { useEffect, useRef } from 'react';
-import ReactDOM from 'react-dom/client';
-import CharacterSheetForm from './CharacterSheetForm';
-import submitCharacterForm from '../../utils/characterSubmitHandler';
+/**
+ * Author: Brandon Trundle
+ * File Name: CharacterSheetWindow.jsx
+ * Date-Created: 4/26/2025
+ * 
+ * File Overview:
+ * Opens a new browser window and renders the CharacterSheetForm inside it using React Portal.
+ * Handles submitting character form data back to the backend API,
+ * syncing styles between main window and popup, and safely managing the popup lifecycle.
+ * 
+ * Props:
+ * - onClose (function): Callback to close the window if user cancels or closes popup manually.
+ * - onSaveSuccess (function): Callback invoked after successful character save.
+ * - character (object): Optional existing character data to populate the form.
+ */
 
+import { useEffect, useRef } from 'react'; // React hooks for side-effects and mutable references
+import ReactDOM from 'react-dom/client'; // ReactDOM API for creating portals and mounting into new windows
+import CharacterSheetForm from './CharacterSheetForm'; // Form component to render inside the new popup window
+import submitCharacterForm from '../../utils/characterSubmitHandler'; // Utility function to submit character form data to server
+
+/**
+ * CharacterSheetWindow Component
+ * 
+ * Opens a new browser popup window for editing or creating a character.
+ * Renders the CharacterSheetForm inside the new window, copies styles,
+ * handles form submission, and manages window cleanup when closed.
+ * 
+ * @param {Function} onClose - Callback when the popup window is manually closed or blocked.
+ * @param {Function} onSaveSuccess - Callback when a character is successfully saved.
+ * @param {Object} character - Optional character object to prefill the form.
+ */
 const CharacterSheetWindow = ({ onClose, onSaveSuccess, character }) => {
   const newWindowRef = useRef(null);
   const containerRef = useRef(document.createElement('div'));
 
+/**
+ * Helper to safely convert string inputs to numbers, or return undefined if invalid.
+ * 
+ * @param {any} val - Value to convert
+ * @returns {number|undefined}
+ */
   const toNumber = (val) => (val !== '' && !isNaN(Number(val)) ? Number(val) : undefined);
 
+/**
+ * Handles form submission from the CharacterSheetForm.
+ * - Prepares a sanitized payload from formData
+ * - Calls the backend submission utility
+ * - Posts a success message to the parent window if successful
+ * 
+ * @param {Event} e - Form submission event
+ * @param {string|null} portraitImage - Uploaded portrait image path or null
+ * @param {Object} formData - Current form field values
+ */
   const handleSubmit = async (e, portraitImage, formData) => {
     e.preventDefault();
 
@@ -131,6 +174,14 @@ const CharacterSheetWindow = ({ onClose, onSaveSuccess, character }) => {
     }
   };
 
+/**
+ * Effect that:
+ * - Opens a new browser popup window
+ * - Injects the CharacterSheetForm React app into the popup
+ * - Copies stylesheets and inline styles from the parent window
+ * - Periodically checks if the popup was closed
+ * - Cleans up by clearing interval and closing popup on unmount
+ */ 
   useEffect(() => {
     newWindowRef.current = window.open(
       '',

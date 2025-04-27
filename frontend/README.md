@@ -1,70 +1,54 @@
-# Getting Started with Create React App
+# ArcanaTable - Virtual Tabletop (VTT) Project
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Project Vision
+ArcanaTable is a Virtual Tabletop (VTT) project currently under development.  
+Its mission is to make playing tabletop RPGs accessible to everyone who wants to experience them.
 
-## Available Scripts
+The motivation behind ArcanaTable stems from issues observed with other existing VTT solutions:
+- Many are clunky, unintuitive, or overwhelming for new users.
+- Many features are locked behind paywalls.
+- Learning curves are steep and discourage new players from entering the hobby.
 
-In the project directory, you can run:
+ArcanaTable aims to **eliminate these barriers**, providing a VTT that is **easy to learn, free to access essential features**, and **genuinely welcoming** to both beginners and veterans of tabletop RPGs.
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Current Functionalities (In Development)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **User Authentication**
+  - Full signup, login, and logout functionality for new and returning users.
 
-### `npm test`
+- **User Onboarding**
+  - After account creation, users complete an onboarding flow to answer questions.
+  - This information will help ArcanaTable customize tutorials and guidance, helping new players learn TTRPGs faster.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- **In-App Messaging System**
+  - Users can send and receive direct messages within the app.
+  - The system operates similarly to common email messaging.
 
-### `npm run build`
+- **Campaign Management**
+  - Users can create campaigns as Game Masters (GMs).
+  - Users can join existing campaigns by entering a valid invite code.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- **Dynamic Map System**
+  - Campaign rooms support map loading with real-time, dynamic updates visible to all connected users.
+  - Grid overlay functionality is available for tactical positioning.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- **Real-time Room Features**
+  - Campaign rooms include:
+    - Live message-style chat.
+    - Dice rolling functionality where rolls and messages appear directly in the chat log.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- **Character Creation**
+  - A full 5e-compatible character creation system is in place.
+  - Users can create, edit, delete, and view their characters via a detailed and intuitive character sheet interface.
 
-### `npm run eject`
+---
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Development Status
+ArcanaTable is actively being developed and expanded with a focus on:
+- **User friendliness**
+- **Accessibility for newcomers**
+- **Minimal barrier to entry**
+- **Enhancing TTRPG immersion through simplicity**
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)

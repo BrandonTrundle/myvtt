@@ -1,14 +1,45 @@
-// CharacterDashboard.jsx
-import React, { useState, useEffect } from 'react';
-import { useCharacters } from '../hooks/useCharacters';
-import CharacterSheetWindow from '../components/CharacterSheet/CharacterSheetWindow';
-import { apiFetch } from '../utils/api';
+/**
+ * Author: Brandon Trundle
+ * File Name: CharacterDashboard.jsx
+ * Date-Created: 4/26/2025
+ * 
+ * File Overview:
+ * Displays the user's saved characters and provides functionality to create, view, edit, and delete characters.
+ * 
+ * Behavior:
+ * - Fetches all saved characters from the server.
+ * - Allows users to create new characters manually.
+ * - Loads and displays full character sheets for viewing/editing.
+ * - Deletes characters with confirmation prompts.
+ * - Listens for post-save messages from character sheet iframe to refresh character list.
+ * 
+ * Props:
+ * - None (page component using internal hooks and state).
+ */
 
+import React, { useState, useEffect } from 'react'; // React library and hooks for state management and lifecycle
+import { useCharacters } from '../hooks/useCharacters'; // Custom hook for fetching and managing user's characters
+import CharacterSheetWindow from '../components/CharacterSheet/CharacterSheetWindow'; // Component for displaying the full character sheet in a modal window
+import { apiFetch } from '../utils/api'; // Utility for making authenticated API requests
+
+/**
+ * CharacterDashboard Component
+ * 
+ * Manages character creation, loading, deleting, and sheet interactions.
+ * 
+ * @returns {JSX.Element} - The rendered character dashboard page
+ */
 const CharacterDashboard = () => {
   const { characters, setCharacters, fetchCharacters } = useCharacters();
   const [showSheet, setShowSheet] = useState(false);
   const [activeCharacter, setActiveCharacter] = useState(null);
 
+/**
+ * Sets up a window message listener for CHARACTER_SAVED events.
+ * 
+ * Behavior:
+ * - Refreshes character list when a character save is completed inside the character sheet.
+ */
   useEffect(() => {
     const handleMessage = (event) => {
       if (event.data?.type === 'CHARACTER_SAVED') {
@@ -24,6 +55,12 @@ const CharacterDashboard = () => {
     };
   }, [fetchCharacters]);
 
+/**
+ * Ensures a character object has default skills and attacks populated.
+ * 
+ * @param {Object} char - Character object from the server
+ * @returns {Object} - Hydrated character object with skills and attacks arrays
+ */
   const hydrateCharacterData = (char) => {
     const defaultSkills = [
       { name: 'Acrobatics', stat: 'Dex', mod: '', proficient: false },
@@ -59,6 +96,13 @@ const CharacterDashboard = () => {
     };
   };
 
+/**
+ * Initiates character creation.
+ * 
+ * Behavior:
+ * - Prompts user to choose between wizard mode or manual mode (wizard not yet implemented).
+ * - Opens manual character creation sheet if selected.
+ */
   const handleCreateClick = () => {
     const useWizard = window.confirm('Would you like to use the character creation wizard?');
     if (useWizard) {
@@ -70,6 +114,12 @@ const CharacterDashboard = () => {
     }
   };
 
+/**
+ * Deletes a character from the server and refreshes the character list.
+ * 
+ * @param {string} id - ID of the character to delete
+ * @throws {Error} - If server request fails
+ */
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this character?')) return;
 
@@ -84,6 +134,12 @@ const CharacterDashboard = () => {
     }
   };
 
+/**
+ * Loads full character data and opens the character sheet.
+ * 
+ * @param {Object} char - Basic character object clicked by the user
+ * @throws {Error} - If loading full character data fails
+ */
   const handleCharacterClick = async (char) => {
     try {
       const fullChar = await apiFetch(`/characters/${char._id}`);
@@ -96,7 +152,10 @@ const CharacterDashboard = () => {
       alert('There was a problem loading this character.');
     }
   };
-
+  
+/**
+ * Closes the character sheet and refreshes the character list after saving.
+ */
   const handleCharacterSaved = async () => {
     setShowSheet(false);
     await fetchCharacters();

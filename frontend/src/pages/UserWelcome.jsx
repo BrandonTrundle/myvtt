@@ -1,14 +1,46 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import UserInfoCard from '../components/UserInfoCard';
-import { apiFetch } from '../utils/api';
-import { UserContext } from '../context/UserContext';
+/**
+ * Author: Brandon Trundle
+ * File Name: UserWelcome.jsx
+ * Date-Created: 4/26/2025
+ * 
+ * File Overview:
+ * Displays the onboarding welcome screen for newly registered ArcanaTable users.
+ * 
+ * Behavior:
+ * - Shows the user info card with account details.
+ * - Encourages users to create their first campaign or view existing ones.
+ * - Tracks and updates hours played session data.
+ * 
+ * Props:
+ * - None (page component using internal context and hooks).
+ */
 
+import React, { useEffect, useState, useContext } from 'react'; // React library and hooks for lifecycle, local state, and context access
+import { useNavigate } from 'react-router-dom'; // Hook for programmatic route navigation
+import UserInfoCard from '../components/UserInfoCard'; // Component displaying compact user information card
+import { apiFetch } from '../utils/api'; // Utility for sending authenticated server requests
+import { UserContext } from '../context/UserContext'; // Context providing user authentication and profile data
+
+/**
+ * UserWelcome Component
+ * 
+ * Renders the welcome screen post-signup or post-login, guiding users to create campaigns or characters.
+ * Tracks session play time and updates it to the server.
+ * 
+ * @returns {JSX.Element} - The rendered welcome screen
+ */
 const UserWelcome = () => {
   const { user } = useContext(UserContext);
   const [campaigns, setCampaigns] = useState([]);
   const navigate = useNavigate();
 
+/**
+ * Fetches user's campaigns and sets up session play time tracking.
+ * 
+ * Behavior:
+ * - Fetches list of user's campaigns from the server on component mount.
+ * - Adds event listeners to track and update minutes played on page unload.
+ */
   useEffect(() => {
     const fetchCampaigns = async () => {
       console.log("📡 Fetching user's campaigns...");
@@ -48,7 +80,10 @@ const UserWelcome = () => {
       window.removeEventListener('beforeunload', updatePlayTime);
     };
   }, []);
-
+  
+/**
+ * Displays a loading message while user data is being fetched.
+ */
   if (!user) {
     return (
       <div className="min-h-screen bg-parchment flex items-center justify-center text-arcanabrown">

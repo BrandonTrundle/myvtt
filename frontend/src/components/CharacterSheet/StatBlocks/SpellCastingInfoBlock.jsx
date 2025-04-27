@@ -1,5 +1,29 @@
-// components/CharacterSheet/StatBlocks/SpellcastingInfoBlock.jsx
+/**
+ * Author: Brandon Trundle
+ * File Name: SpellcastingInfoBlock.jsx
+ * Date-Created: 4/26/2025
+ * 
+ * File Overview:
+ * Provides input fields for a character's basic spellcasting information,
+ * including class, spellcasting ability, spell save DC, and spell attack bonus.
+ */
 
+import React from 'react'; // React library for creating input-driven components
+
+/**
+ * SpellcastingInfoBlock Component
+ * 
+ * Purpose:
+ * Renders labeled fields for key spellcasting statistics used during gameplay.
+ * 
+ * Props:
+ * @param {Object} values - Object containing the character's current spellcasting-related values.
+ * @param {Function} onChange - Callback function to update the form state when spellcasting fields change.
+ * 
+ * Behavior:
+ * - Displays editable fields for spellcasting class, ability, save DC, and attack bonus.
+ * - Updates the parent form's state on user input through the provided `onChange` handler.
+ */
 const SpellcastingInfoBlock = ({ values, onChange }) => {
   return (
     <div className="spellcasting-info-block">

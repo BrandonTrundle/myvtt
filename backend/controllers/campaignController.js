@@ -1,10 +1,28 @@
-const Campaign = require('../models/Campaign');
-const User = require('../models/User');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+/**
+ * Author: Brandon Trundle
+ * File Name: campaignController.js
+ * Date-Created: 4/26/2025
+ * 
+ * File Overview:
+ * Manages campaign creation, retrieval, update, deletion, and joining functionality
+ * for ArcanaTable. Handles file uploads for campaign images and maintains
+ * campaign-related user permissions (e.g., GM-only operations).
+ */
 
-// Configure multer storage
+
+const Campaign = require('../models/Campaign'); // Mongoose model for campaign data
+const User = require('../models/User'); // Mongoose model for user data
+const multer = require('multer'); // Middleware for handling multipart/form-data (file uploads)
+const path = require('path'); // Node.js module for working with file and directory paths
+const fs = require('fs'); // Node.js module for filesystem operations
+
+
+/**
+ * Configures Multer storage settings for campaign image uploads.
+ * - Saves files to '/uploads/campaigns'
+ * - Creates the directory if it does not exist
+ * - Uses a unique filename based on timestamp and random number
+ */
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const uploadPath = path.join(__dirname, '../uploads/campaigns');
@@ -22,8 +40,21 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// Middleware
+/**
+ * Middleware to handle uploading a single campaign image file.
+ * Expects the form-data field name to be 'image'.
+ */
 exports.campaignImageUploadMiddleware = upload.single('image');
+
+
+/**
+ * Uploads and saves a campaign's image.
+ * 
+ * @route   PATCH /campaigns/:id/image
+ * @access  Private (GM-only)
+ * @param   {Object} req - Express request object containing uploaded image file and user data.
+ * @param   {Object} res - Express response object used to send the image URL or error message.
+ */
 
 exports.uploadCampaignImage = async (req, res) => {
   try {
@@ -51,7 +82,16 @@ exports.uploadCampaignImage = async (req, res) => {
   }
 };
 
-// Create Campaign
+/**
+ * Creates a new campaign with title, system, and optional module.
+ * Assigns the current user as the GM.
+ * 
+ * @route   POST /campaigns
+ * @access  Private
+ * @param   {Object} req - Express request object containing campaign details.
+ * @param   {Object} res - Express response object used to send new campaign or error.
+ */
+
 exports.createCampaign = async (req, res) => {
   try {
     const { title, system, module } = req.body;
@@ -82,6 +122,16 @@ exports.createCampaign = async (req, res) => {
   }
 };
 
+/**
+ * Retrieves all campaigns associated with the current user.
+ * Includes campaigns where user is GM and campaigns where user is a player.
+ * Adds an `isGM` flag for frontend usage.
+ * 
+ * @route   GET /campaigns/mine
+ * @access  Private
+ * @param   {Object} req - Express request object containing authenticated user ID.
+ * @param   {Object} res - Express response object used to send list of campaigns.
+ */
 exports.getMyCampaigns = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -114,6 +164,14 @@ exports.getMyCampaigns = async (req, res) => {
   }
 };
 
+/**
+ * Deletes a campaign if the current user is the GM.
+ * 
+ * @route   DELETE /campaigns/:id
+ * @access  Private (GM-only)
+ * @param   {Object} req - Express request object containing campaign ID.
+ * @param   {Object} res - Express response object used to confirm deletion or return error.
+ */
 exports.deleteCampaign = async (req, res) => {
   try {
     const campaign = await Campaign.findById(req.params.id);
@@ -136,6 +194,15 @@ exports.deleteCampaign = async (req, res) => {
   }
 };
 
+/**
+ * Retrieves detailed campaign information by campaign ID.
+ * Includes populated GM and player display names and avatars.
+ * 
+ * @route   GET /campaigns/:id
+ * @access  Private
+ * @param   {Object} req - Express request object containing campaign ID.
+ * @param   {Object} res - Express response object used to send campaign data or error.
+ */
 exports.getCampaignById = async (req, res) => {
   try {
     const campaign = await Campaign.findById(req.params.id)
@@ -153,8 +220,15 @@ exports.getCampaignById = async (req, res) => {
   }
 };
 
-// 📂 controllers/campaignController.js
-
+/**
+ * Allows a user to join a campaign using an invite code.
+ * Validates if user is already a GM or player before adding them.
+ * 
+ * @route   POST /campaigns/join/:code
+ * @access  Private
+ * @param   {Object} req - Express request object containing invite code and user ID.
+ * @param   {Object} res - Express response object used to confirm joining or return error.
+ */
 exports.joinCampaignByCode = async (req, res) => {
   try {
     const { code } = req.params;

@@ -1,7 +1,32 @@
-import React, { useState } from 'react';
-import MessageForm from '../components/MessageForm';
-import { useMessages } from '../hooks/useMessages';
+/**
+ * Author: Brandon Trundle
+ * File Name: Messages.jsx
+ * Date-Created: 4/26/2025
+ * 
+ * File Overview:
+ * Displays the user's inbox for ArcanaTable, allowing viewing, composing, refreshing, and deleting messages.
+ * 
+ * Behavior:
+ * - Fetches and displays all received messages.
+ * - Allows users to view full message details and mark them as read.
+ * - Allows users to compose and send new messages.
+ * - Supports deleting individual messages.
+ * 
+ * Props:
+ * - None (page component using internal hooks and state).
+ */
 
+import React, { useState } from 'react'; // React library and hook for managing local state
+import MessageForm from '../components/MessageForm'; // Component for composing and sending a new message
+import { useMessages } from '../hooks/useMessages'; // Custom hook for managing user messages
+
+/**
+ * Messages Component
+ * 
+ * Renders the user's inbox, allowing message viewing, composing, refreshing, and deleting.
+ * 
+ * @returns {JSX.Element} - The rendered messages page
+ */
 const Messages = () => {
   const {
     messages,
@@ -13,7 +38,15 @@ const Messages = () => {
 
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [showComposer, setShowComposer] = useState(false);
-
+  
+/**
+ * Selects a message to view its full content.
+ * 
+ * Behavior:
+ * - Marks the message as read if it was unread.
+ * 
+ * @param {Object} msg - The selected message object
+ */
   const handleSelectMessage = async (msg) => {
     setSelectedMessage(msg);
     if (!msg.isRead) await markAsRead(msg._id);

@@ -1,10 +1,37 @@
-// CharacterPortrait.jsx
+/**
+ * Author: Brandon Trundle
+ * File Name: CharacterPortrait.jsx
+ * Date-Created: 4/26/2025
+ * 
+ * File Overview:
+ * Provides functionality for users to upload and resize a character portrait image.
+ * Ensures all portraits are resized and centered into a 256x256 pixel canvas before being stored.
+ */
 
-import { useRef } from 'react';
+import { useRef } from 'react'; // React hook for accessing and manipulating the DOM (canvas element)
 
+
+/**
+ * CharacterPortrait Component
+ * 
+ * Purpose:
+ * Allows users to upload a character portrait and automatically resizes the image to a standard size for consistency.
+ * 
+ * Props:
+ * @param {string} imageSrc - The current base64-encoded image source to display in the preview.
+ * @param {Function} setImageSrc - Function to update the image source after resizing.
+ * 
+ * Behavior:
+ * - Displays an existing portrait if available, or a placeholder prompting for upload.
+ * - When an image is uploaded, draws it into a hidden canvas resized to 256x256 pixels.
+ * - Converts the canvas to a base64 PNG and updates the parent component state.
+ */
 const CharacterPortrait = ({ imageSrc, setImageSrc }) => {
   const canvasRef = useRef(null);
-
+  
+/**
+ * Handles reading and resizing an uploaded image file before updating the portrait source.
+ */
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;

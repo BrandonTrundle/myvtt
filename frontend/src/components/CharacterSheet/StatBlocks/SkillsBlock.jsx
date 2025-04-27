@@ -1,8 +1,43 @@
-import { useEffect, useState } from 'react';
+/**
+ * Author: Brandon Trundle
+ * File Name: SkillsBlock.jsx
+ * Date-Created: 4/26/2025
+ * 
+ * File Overview:
+ * Renders the skills management section of the character sheet, allowing users to add, edit,
+ * and set proficiency for character skills.
+ */
 
+import { useEffect, useState } from 'react'; // React hooks for managing local component state and synchronizing with external data
+
+/**
+ * SkillsBlock Component
+ * 
+ * Purpose:
+ * Manages and displays a list of character skills, including skill names, associated stats, modifiers, and proficiency checkboxes.
+ * 
+ * Props:
+ * @param {Object} values - Object containing the character's current list of skills.
+ * @param {Function} onChange - Callback function to update the parent form when skills are modified.
+ * 
+ * Behavior:
+ * - Loads existing skills from form values or defaults to a standard 5e skill list.
+ * - Allows toggling proficiency, editing skill modifiers, names, and associated stats.
+ * - Supports dynamically adding new custom skills.
+ */
 const SkillsBlock = ({ values, onChange }) => {
   const [skills, setSkills] = useState([]);
-
+  
+/**
+ * Loads the character's skills from form values or defaults to a standard 5e skill list.
+ * 
+ * Behavior:
+ * - If `values.skills` exists, sets it as the current skill list.
+ * - Otherwise, initializes a default set of standard skills used in D&D 5e.
+ * 
+ * Dependencies:
+ * - Runs whenever `values.skills` changes.
+ */
   useEffect(() => {
     setSkills(values.skills || [
       { name: 'Acrobatics', stat: 'Dex', mod: '', proficient: false },
@@ -26,6 +61,13 @@ const SkillsBlock = ({ values, onChange }) => {
     ]);
   }, [values.skills]);
 
+/**
+ * Updates a specific skill's field value when edited.
+ * 
+ * @param {number} index - Index of the skill in the skills array.
+ * @param {string} field - Field name to update ('name', 'stat', 'mod', 'proficient').
+ * @param {string|boolean} value - New value for the field.
+ */
   const updateSkill = (index, field, value) => {
     const updated = [...skills];
     updated[index][field] = value;
@@ -33,6 +75,9 @@ const SkillsBlock = ({ values, onChange }) => {
     onChange({ target: { name: 'skills', value: updated } });
   };
 
+/**
+ * Adds a new blank skill entry to the list.
+ */
   const addSkill = () => {
     const updated = [...skills, { name: '', stat: '', mod: '', proficient: false }];
     setSkills(updated);

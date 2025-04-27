@@ -1,13 +1,39 @@
-import React, { useState } from 'react';
+/**
+ * Author: Brandon Trundle
+ * File Name: DiceRoller.jsx
+ * Date-Created: 4/26/2025
+ * 
+ * File Overview:
+ * Renders a collapsible dice rolling panel for ArcanaTable.
+ * Allows players to select dice types, set quantity and modifiers,
+ * and roll dice with the result being sent through a callback.
+ * 
+ * Props:
+ * - onRoll (function): Callback invoked with roll configuration ({ dice, quantity, modifier }).
+ */
 
+import React, { useState } from 'react'; // React core library and hooks
+
+/**
+ * DiceRoller Component
+ * 
+ * Provides an in-game dice rolling tool:
+ * - Users can select a dice type (d4, d6, d8, d10, d12, d20, d100)
+ * - Users can specify quantity and modifiers
+ * - Rolls are emitted back to parent via onRoll prop
+ * 
+ * @param {Function} onRoll - Function to call when a dice roll is executed.
+ */
 const DiceRoller = ({ onRoll }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedDice, setSelectedDice] = useState('d20');
   const [quantity, setQuantity] = useState(1);
   const [modifier, setModifier] = useState(0);
-
   const diceTypes = ['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100'];
 
+/**
+ * Handles building the roll object and sending it to the parent component.
+ */
   const handleRoll = () => {
     onRoll({
       dice: selectedDice,
@@ -47,7 +73,7 @@ const DiceRoller = ({ onRoll }) => {
                 />
               </button>
             ))}
-          </div>
+          </div> 
 
           <div className="flex flex-col gap-2">
             <label className="text-sm">Number of Dice:</label>

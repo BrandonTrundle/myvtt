@@ -1,24 +1,51 @@
-// 📂 frontend/context/SocketContext.js
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-  useCallback,
-} from 'react';
-import { io } from 'socket.io-client';
+/**
+ * Author: Brandon Trundle
+ * File Name: SocketContext.js
+ * Date-Created: 4/26/2025
+ * 
+ * File Overview:
+ * Provides global access to a persistent WebSocket connection using socket.io-client.
+ * Manages connection lifecycle, campaign room joining, and reconnection handling.
+ * 
+ * Behavior:
+ * - Establishes WebSocket connection on component mount.
+ * - Automatically reconnects and re-joins last campaign room after reconnect.
+ * - Exposes socket instance and joinCampaign helper function to consumers.
+ * 
+ * Props:
+ * - None (internal context provider).
+ */
 
-// 🌐 Environment-based API base
+import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react'; // React imports for context, lifecycle hooks, refs, state, and callbacks
+import { io } from 'socket.io-client'; // Client library for WebSocket communication via Socket.IO
+
+
+// Server base URL for WebSocket connection, derived from environment variables or defaults to localhost
 const SOCKET_SERVER_URL = process.env.REACT_APP_API_BASE?.replace('/api', '') || 'http://localhost:5000';
 
+// Context object for providing WebSocket connection access across the application
 const SocketContext = createContext();
 
+/**
+ * SocketProvider Component
+ * 
+ * Wraps the application and initializes a persistent WebSocket connection.
+ * Provides socket methods and connection status to child components.
+ * 
+ * @param {Object} props
+ * @param {ReactNode} props.children - Components that will have access to the WebSocket context
+ * @returns {JSX.Element} - Context provider wrapping children
+ */
 export const SocketProvider = ({ children }) => {
   const socketRef = useRef(null);
   const [isConnected, setIsConnected] = useState(false);
   const lastJoinedCampaign = useRef(null);
 
+/**
+ * Establishes a WebSocket connection on mount.
+ * Handles connect, disconnect, connect_error, and map_uploaded events.
+ * Cleans up the connection on unmount.
+ */
   useEffect(() => {
     console.log('🔌 Connecting to WebSocket server at:', SOCKET_SERVER_URL);
     socketRef.current = io(SOCKET_SERVER_URL, {
@@ -57,6 +84,11 @@ export const SocketProvider = ({ children }) => {
     };
   }, []);
 
+/**
+ * Emits a socket event to join a specific campaign room.
+ * 
+ * @param {string} campaignId - ID of the campaign room to join
+ */
   const joinCampaign = useCallback((campaignId) => {
     if (!campaignId || !socketRef.current) return;
     if (lastJoinedCampaign.current === campaignId) {
@@ -81,6 +113,14 @@ export const SocketProvider = ({ children }) => {
   );
 };
 
+/**
+ * useSocket Hook
+ * 
+ * Custom hook to access the WebSocket connection and helper functions.
+ * 
+ * @returns {Object} - Socket connection object, isConnected boolean, joinCampaign function
+ * @throws {Error} - If used outside of a SocketProvider
+ */
 export const useSocket = () => {
   const context = useContext(SocketContext);
   if (!context) {

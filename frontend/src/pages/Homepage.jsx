@@ -1,7 +1,31 @@
-import React from 'react';
-import { Link } from 'react-router-dom'; // add this at the top
+/**
+ * Author: Brandon Trundle
+ * File Name: Homepage.jsx
+ * Date-Created: 4/26/2025
+ * 
+ * File Overview:
+ * Public-facing landing page for ArcanaTable, showcasing the platform's features and encouraging new users to sign up.
+ * 
+ * Behavior:
+ * - Displays marketing sections including hero banner, features, about information, and map preview.
+ * - Provides call-to-action buttons linking to the signup page.
+ * - Renders static content with simple interactions.
+ * 
+ * Props:
+ * - None (page component using internal layout).
+ */
+
+import React from 'react'; // React library for building the component
+import { Link } from 'react-router-dom'; // Link component for client-side navigation between routes
 
 
+/**
+ * Homepage Component
+ * 
+ * Renders the public landing page for ArcanaTable including feature highlights, about section, and calls to action.
+ * 
+ * @returns {JSX.Element} - The rendered homepage layout
+ */
 const Homepage = () => {
   return (
     <div className="bg-parchment text-arcanabrown">

@@ -1,6 +1,28 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+/**
+ * Author: Brandon Trundle
+ * File Name: authMiddleware.js
+ * Date-Created: 4/26/2025
+ * 
+ * File Overview:
+ * Middleware to authenticate users in ArcanaTable.
+ * Verifies JWT tokens from the Authorization header,
+ * attaches the user object to the request for further use,
+ * and handles unauthorized access scenarios.
+ */
 
+const jwt = require('jsonwebtoken'); // Library for signing and verifying JWT tokens
+const User = require('../models/User'); // Mongoose model for user data
+
+/**
+ * Middleware function to protect private routes by verifying JWT tokens.
+ * 
+ * @access  Private
+ * @param   {Object} req - Express request object containing the Authorization header.
+ * @param   {Object} res - Express response object used to send authorization errors.
+ * @param   {Function} next - Express next middleware function to continue request flow.
+ * 
+ * @throws  401 if no token is provided, token is invalid, or user is not found.
+ */
 const protect = async (req, res, next) => {
   let token = req.headers.authorization;
 

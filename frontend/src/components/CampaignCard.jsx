@@ -1,18 +1,54 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { apiFetch, API_BASE, STATIC_BASE } from '../utils/api';
-import { Trash2 } from 'lucide-react';
-import { useUser } from '../context/UserContext';
+/**
+ * Author: Brandon Trundle
+ * File Name: CampaignCard.jsx
+ * Date-Created: 4/26/2025
+ * 
+ * File Overview:
+ * Displays a campaign summary card for ArcanaTable, showing the campaign image, title, system, module,
+ * players, GM avatar, and key actions like sending invites, launching the table, or deleting the campaign.
+ * 
+ * Features:
+ * - Upload and update campaign images (if GM)
+ * - Copy invite code and send direct invites
+ * - Navigate into a campaign's virtual tabletop session
+ * - Display GM and player avatars with hover names
+ * - Allow GM to delete campaigns
+ * 
+ * Props:
+ * - campaign (object): Campaign object containing title, system, players, GM, and invite code.
+ * - onCopyCode (function): Callback to copy the invite code to clipboard.
+ * - onDelete (function): Callback to delete the campaign.
+ * - onSendInvite (function): (currently unused inside) Placeholder to handle sending invites manually.
+ * - isCopied (boolean): If true, shows "Copied!" on the copy button.
+ */
 
+import React, { useRef, useState, useEffect } from 'react'; // React library and hooks
+import { useNavigate } from 'react-router-dom'; // Navigation hook for routing
+import { apiFetch, API_BASE, STATIC_BASE } from '../utils/api'; // Utility for making API requests
+import { Trash2 } from 'lucide-react'; // Lucide icon for delete button
+import { useUser } from '../context/UserContext'; // Custom hook for accessing the authenticated user
+
+/**
+ * CampaignCard Component
+ * 
+ * Renders a campaign preview card with campaign metadata, players, actions, and image upload.
+ * Handles UI and permissions logic based on whether the user is the GM or a player.
+ * 
+ * @param {Object} campaign - Campaign data object.
+ * @param {Function} onCopyCode - Callback to copy invite code.
+ * @param {Function} onDelete - Callback to delete a campaign.
+ * @param {Function} onSendInvite - (Unused internally) Prop placeholder.
+ * @param {boolean} isCopied - Whether the invite code was recently copied.
+ */
 const CampaignCard = ({ campaign, onCopyCode, onDelete, onSendInvite, isCopied }) => {
   const navigate = useNavigate();
   const { user: currentUser } = useUser();
 
   const isGM = campaign?.gm?._id === currentUser?._id;
-console.log('🎭 isGM:', isGM);
-console.log('👤 currentUser._id:', currentUser?._id);
-console.log('🎲 campaign.gm:', campaign.gm);
-console.log('🧑‍🤝‍🧑 campaign.players:', campaign.players);
+  console.log('🎭 isGM:', isGM);
+  console.log('👤 currentUser._id:', currentUser?._id);
+  console.log('🎲 campaign.gm:', campaign.gm);
+  console.log('🧑‍🤝‍🧑 campaign.players:', campaign.players);
 
   const fileInputRef = useRef(null);
   const [imageUrl, setImageUrl] = useState('/default-campaign.jpg');
@@ -20,12 +56,19 @@ console.log('🧑‍🤝‍🧑 campaign.players:', campaign.players);
   const [isInviting, setIsInviting] = useState(false);
   const [inviteTo, setInviteTo] = useState('');
   const [sending, setSending] = useState(false);
+  
+  /**
+ * Deletes the campaign by calling onDelete with campaign ID.
+ */
   const handleDelete = () => {
     if (onDelete) {
       onDelete(campaign._id);
     }
   };
 
+/**
+ * Effect to update displayed campaign image URL when the campaign prop changes.
+ */
   useEffect(() => {
     if (campaign?.imageUrl) {
       setImageUrl(`${STATIC_BASE}${campaign.imageUrl}`);
@@ -34,12 +77,18 @@ console.log('🧑‍🤝‍🧑 campaign.players:', campaign.players);
     }
   }, [campaign]);
 
+  /**
+ * Handles clicking the campaign image for uploading a new one (only GM).
+ */
   const handleImageClick = () => {
     if (isGM && fileInputRef.current) {
       fileInputRef.current.click();
     }
   };
 
+/**
+ * Handles file input change and uploads a new campaign image to the server.
+ */
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -65,6 +114,9 @@ console.log('🧑‍🤝‍🧑 campaign.players:', campaign.players);
     }
   };
 
+/**
+ * Sends an invite message to a specified username with the campaign invite code.
+ */
   const handleSendInvite = async () => {
     if (!inviteTo.trim()) {
       alert('Please enter a username.');
@@ -92,7 +144,10 @@ console.log('🧑‍🤝‍🧑 campaign.players:', campaign.players);
       setSending(false);
     }
   };
-
+  
+/**
+ * Navigates into the virtual table top (VTT) session for the selected campaign.
+ */
   const handleEnterTable = () => {
     navigate(`/table/${campaign._id}`);
   };

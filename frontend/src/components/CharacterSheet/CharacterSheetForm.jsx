@@ -1,32 +1,66 @@
-// components/CharacterSheet/CharacterSheetForm.jsx
+/**
+ * Author: Brandon Trundle
+ * File Name: CharacterSheetForm.jsx
+ * Date-Created: 4/26/2025
+ * 
+ * File Overview:
+ * Renders a complete multi-page editable character sheet form for ArcanaTable.
+ * Handles updating character fields across multiple tabs, uploading a character portrait,
+ * and organizing character sheet sections into reusable stat block components.
+ * 
+ * Props:
+ * - onSubmit (function): Callback function to handle form submission.
+ * - character (object): Optional initial character data to populate the form.
+ */
 
-import { useState, useEffect } from 'react';
-import CharacterHeader from './StatBlocks/CharacterHeader';
-import AbilityScores from './StatBlocks/AbilityScores';
-import SkillsBlock from './StatBlocks/SkillsBlock';
-import ProficiencyInspirationBlock from './StatBlocks/ProficiencyInspirationBlock';
-import SavingThrowsOnlyBlock from './StatBlocks/SavingThrowsOnlyBlock';
-import CombatStats from './StatBlocks/CombatStats';
-import HitPointsBlock from './StatBlocks/HitPointsBlock';
-import DeathSaves from './StatBlocks/DeathSaves';
-import AttackSection from './StatBlocks/AttackSection';
-import PersonalityTraits from './StatBlocks/PersonalityTraits';
-import FeaturesAndTraits from './StatBlocks/FeaturesAndTraits';
-import CharacterPortrait from './StatBlocks/CharacterPortrait';
-import WisdomAndProficiencies from './StatBlocks/WisdomAndProficiencies';
-import EquipmentSection from './StatBlocks/EquipmentSection';
-import PhysicalAttributesBlock from './StatBlocks/PhysicalAttributes';
-import CharacterAppearance from './StatBlocks/CharacterAppearance';
-import AlliesAndOrganizations from './StatBlocks/AlliesAndOrganizations';
-import SpellCastingInfoBlock from './StatBlocks/SpellCastingInfoBlock';
-import SpellCastingSection from './StatBlocks/SpellCastingSection';
-import TreasureBlock from './StatBlocks/TreasureBlock';
+import { useState, useEffect } from 'react'; // React hooks for state and side-effects
+import CharacterHeader from './StatBlocks/CharacterHeader'; // Header block (Character name, etc.)
+import AbilityScores from './StatBlocks/AbilityScores'; // Ability scores block
+import SkillsBlock from './StatBlocks/SkillsBlock'; // Skills block
+import ProficiencyInspirationBlock from './StatBlocks/ProficiencyInspirationBlock'; // Proficiency and inspiration block
+import SavingThrowsOnlyBlock from './StatBlocks/SavingThrowsOnlyBlock'; // Saving throws block
+import CombatStats from './StatBlocks/CombatStats'; // Combat stats block
+import HitPointsBlock from './StatBlocks/HitPointsBlock'; // Hit points block
+import DeathSaves from './StatBlocks/DeathSaves'; // Death saves block
+import AttackSection from './StatBlocks/AttackSection'; // Attack actions block
+import PersonalityTraits from './StatBlocks/PersonalityTraits'; // Personality traits block
+import FeaturesAndTraits from './StatBlocks/FeaturesAndTraits'; // Features and traits block
+import CharacterPortrait from './StatBlocks/CharacterPortrait'; // Character portrait uploader
+import WisdomAndProficiencies from './StatBlocks/WisdomAndProficiencies'; // Passive wisdom and proficiencies
+import EquipmentSection from './StatBlocks/EquipmentSection'; // Equipment section
+import PhysicalAttributesBlock from './StatBlocks/PhysicalAttributes'; // Physical attributes (age, height, etc.)
+import CharacterAppearance from './StatBlocks/CharacterAppearance'; // Character appearance section
+import AlliesAndOrganizations from './StatBlocks/AlliesAndOrganizations'; // Allies and organizations block
+import SpellCastingInfoBlock from './StatBlocks/SpellCastingInfoBlock'; // Spellcasting meta info block
+import SpellCastingSection from './StatBlocks/SpellCastingSection'; // Full spell list and slots section
+import TreasureBlock from './StatBlocks/TreasureBlock'; // Treasure and coins block
 
-
+/**
+ * CharacterSheetForm Component
+ * 
+ * Displays and manages a multi-page character sheet form, divided into three tabbed pages:
+ *  - Page 1: Core character stats, combat, and personality
+ *  - Page 2: Physical attributes, organizations, and treasure
+ *  - Page 3: Spellcasting information and spell lists
+ * 
+ * Handles:
+ * - Form field updates across nested components
+ * - Portrait image uploads
+ * - Multi-page tab navigation
+ * - Submitting final character form data
+ * 
+ * @param {Function} onSubmit - Callback invoked when form is submitted.
+ * @param {Object} character - Initial character data object to populate the form.
+ */
 const CharacterSheetForm = ({ onSubmit, character }) => {
+  
+  // Local state for managing uploaded portrait image
   const [portraitImage, setPortraitImage] = useState(character?.portraitImage || null);
+  
+  // Local state for managing current tab/page
   const [currentPage, setCurrentPage] = useState(1);
-
+  
+  // Local state for form data reflecting the character sheet fields
   const [formData, setFormData] = useState(() => {
     const safeCharacter = character || {};
     const base = {};
@@ -57,7 +91,9 @@ const CharacterSheetForm = ({ onSubmit, character }) => {
     return base;
   });
   
-
+/**
+ * Effect to initialize or update form data whenever the provided character prop changes.
+ */
   useEffect(() => {
     if (character) {
       setFormData({
@@ -72,6 +108,10 @@ const CharacterSheetForm = ({ onSubmit, character }) => {
     }
   }, [character]);
 
+/**
+ * Generic handler for updating form field values.
+ * Supports checkboxes and text inputs dynamically.
+ */  
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     const val = type === 'checkbox' ? checked : value;

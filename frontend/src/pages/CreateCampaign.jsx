@@ -1,7 +1,32 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { apiFetch } from '../utils/api';
+/**
+ * Author: Brandon Trundle
+ * File Name: CreateCampaign.jsx
+ * Date-Created: 4/26/2025
+ * 
+ * File Overview:
+ * Displays a form for creating a new campaign, allowing the user to input campaign details and optionally upload an image.
+ * 
+ * Behavior:
+ * - Collects form data for a new campaign.
+ * - Handles optional image uploads using multipart/form-data.
+ * - Sends a POST request to create the campaign on the server.
+ * - Redirects to the campaigns list on success.
+ * 
+ * Props:
+ * - None (page component using internal state).
+ */
 
+import React, { useState } from 'react'; // React library and hook for local state management
+import { useNavigate } from 'react-router-dom'; // Hook for programmatic navigation
+import { apiFetch } from '../utils/api'; // Utility for sending server requests with authentication
+
+/**
+ * CreateCampaign Component
+ * 
+ * Renders a form for creating a new campaign, handling title, system, module, and optional image uploads.
+ * 
+ * @returns {JSX.Element} - The rendered campaign creation page
+ */
 const CreateCampaign = () => {
   const [form, setForm] = useState({
     title: '',
@@ -13,18 +38,40 @@ const CreateCampaign = () => {
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
+/**
+ * Updates form state when an input field changes.
+ * 
+ * @param {Event} e - Input change event
+ */
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+/**
+ * Updates form state with a selected image file.
+ * 
+ * @param {Event} e - File input change event
+ */
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setForm((prev) => ({ ...prev, image: file }));
     }
   };
-
+  
+/**
+ * Handles form submission to create a new campaign.
+ * 
+ * Behavior:
+ * - Validates required fields.
+ * - Packages form data as multipart/form-data.
+ * - Sends POST request to the server.
+ * - Navigates to campaign list page on success.
+ * 
+ * @param {Event} e - Form submit event
+ * @throws {Error} - If server request fails
+ */
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("📡 Submitting form with data:", form);

@@ -1,9 +1,34 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import navigate hook
-import { apiFetch } from '../utils/api';
-import CampaignCard from '../components/CampaignCard';
-import { useMyCampaigns } from '../hooks/useMyCampaigns';
+/**
+ * Author: Brandon Trundle
+ * File Name: CampaignList.jsx
+ * Date-Created: 4/26/2025
+ * 
+ * File Overview:
+ * Displays the user's list of campaigns, with options to create, join, delete, and manage campaigns.
+ * 
+ * Behavior:
+ * - Fetches the user's campaigns from the server.
+ * - Allows users to create new campaigns or join existing ones via invite code.
+ * - Provides interaction handlers for deleting, copying invite codes, and managing invitations.
+ * 
+ * Props:
+ * - None (page component using internal hooks and state).
+ */
 
+import React, { useState } from 'react'; // React library and hooks for state management
+import { useNavigate } from 'react-router-dom'; // Hook for programmatic route navigation
+import { apiFetch } from '../utils/api'; // Utility for sending authenticated server requests
+import CampaignCard from '../components/CampaignCard'; // Component for displaying individual campaign cards
+import { useMyCampaigns } from '../hooks/useMyCampaigns'; // Custom hook for fetching and managing user's campaigns
+
+/**
+ * CampaignList Component
+ * 
+ * Renders the list of campaigns the user is involved in.
+ * Provides functionality to create, join, delete, and manage campaigns.
+ * 
+ * @returns {JSX.Element} - The rendered campaign list page
+ */
 const CampaignList = () => {
   const navigate = useNavigate(); // Create navigate function
   const { campaigns, setCampaigns, fetchCampaigns } = useMyCampaigns();
@@ -11,6 +36,12 @@ const CampaignList = () => {
   const [joinCode, setJoinCode] = useState('');
   const [joinLoading, setJoinLoading] = useState(false);
 
+/**
+ * Deletes a campaign from the server and removes it from local state.
+ * 
+ * @param {string} campaignId - ID of the campaign to delete
+ * @throws {Error} - If server request fails
+ */
   const handleDeleteCampaign = async (campaignId) => {
     if (!window.confirm('Are you sure you want to delete this campaign?')) return;
   
@@ -24,17 +55,37 @@ const CampaignList = () => {
     }
   };
 
+/**
+ * Handles sending a campaign invite.
+ * (Currently a placeholder for future custom invite modal functionality.)
+ * 
+ * @param {Object} campaign - Campaign object for which to send an invite
+ */
   const handleSendInvite = (campaign) => {
     console.log("📤 Sending invite for campaign:", campaign._id);
     alert(`TODO: Custom invite modal — already functional inline.`);
   };
 
+/**
+ * Copies a campaign's invite code to the clipboard.
+ * 
+ * @param {string} code - Invite code to copy
+ */
   const handleCopyCode = (code) => {
     navigator.clipboard.writeText(code);
     setCopiedCode(code);
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
+/**
+ * Sends a join request using an invite code to join an existing campaign.
+ * 
+ * Behavior:
+ * - Sends POST request to /campaigns/join/:inviteCode.
+ * - Updates local campaign list on success.
+ * 
+ * @throws {Error} - If network request or server join fails
+ */
   const handleJoin = async () => {
     if (!joinCode.trim()) return;
 
@@ -63,7 +114,10 @@ const CampaignList = () => {
       setJoinLoading(false);
     }
   };
-
+  
+/**
+ * Redirects the user to the create new campaign page.
+ */
   const handleCreateNewCampaign = () => {
     navigate('/create-campaign'); // Navigate to the create new campaign page
   };

@@ -1,7 +1,40 @@
-import React, { useContext } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import { UserContext } from '../context/UserContext';
+/**
+ * Author: Brandon Trundle
+ * File Name: ProtectedRoute.jsx
+ * Date-Created: 4/26/2025
+ * 
+ * File Overview:
+ * Guards private routes by checking user authentication and onboarding status.
+ * 
+ * Behavior:
+ * - Redirects unauthenticated users to homepage (/).
+ * - Redirects users without completed onboarding to /welcome.
+ * - Redirects onboarded users away from /welcome to /user-welcome.
+ * - Renders protected children if checks pass.
+ * 
+ * Props:
+ * - children (ReactNode): The protected component(s) to render if authorized.
+ */
 
+import React, { useContext } from 'react'; // React core library and hooks
+import { Navigate, useLocation } from 'react-router-dom'; // Router components for redirects
+import { UserContext } from '../context/UserContext'; // Global user context provider
+
+/**
+ * ProtectedRoute Component
+ * 
+ * Guards application routes based on:
+ * - Token presence in localStorage
+ * - User context loading status
+ * - User onboarding completion status
+ * 
+ * Redirects based on authentication or onboarding state, otherwise renders child components.
+ * 
+ * @param {Object} props
+ * @param {React.ReactNode} props.children - Components intended to be protected.
+ * 
+ * @returns {JSX.Element} Either a redirect, a loading indicator, or the protected content.
+ */
 const ProtectedRoute = ({ children }) => {
   const { user } = useContext(UserContext);
   const token = localStorage.getItem('token');
