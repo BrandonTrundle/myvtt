@@ -1,0 +1,668 @@
+=== File: backend/controllers/authController.js ===
+
+Purpose:
+- Manages all authentication and onboarding-related operations for ArcanaTable.
+- Provides endpoints for user registration, login, fetching authenticated user profile, and completing onboarding.
+
+Endpoints:
+- POST /signup
+  • Registers a new user (email, password, firstName, lastName).
+  • Passwords are hashed via Mongoose pre-save hooks.
+  • Returns a signed JWT valid for 7 days.
+
+- POST /login
+  • Authenticates user credentials (email + password).
+  • Returns JWT token and complete user profile on success.
+
+- GET /me
+  • Retrieves the authenticated user's profile based on the provided JWT.
+  • Requires `protect` middleware.
+
+- PATCH /onboarding
+  • Updates onboarding fields (preferences, experience level, language, etc.).
+  • Marks the `onboardingComplete` flag as true.
+  • Requires `protect` middleware.
+
+Models Used:
+- `User` (Mongoose user model)
+
+Middleware Dependencies:
+- `protect` (JWT authentication middleware)
+
+Libraries Used:
+- `jsonwebtoken` (JWT signing and verification)
+- `bcrypt` (password hashing and comparison)
+
+Notes:
+- All user password fields are excluded from query responses (`select('-password')`).
+- JWT tokens expire after 7 days for all authenticated sessions.
+- Consistent error handling using 400 (Bad Request), 404 (Not Found), and 500 (Server Error) status codes.
+=============================================================================================
+
+=== File: backend/controllers/campaignController.js ===
+
+Purpose:
+- Manages campaign creation, retrieval, updating, deletion, and joining in ArcanaTable.
+- Handles campaign image uploads and enforces GM-only permissions on sensitive actions.
+
+Endpoints:
+- PATCH /campaigns/:id/image
+  • Uploads a campaign image and sets it as the active image.
+  • Only accessible by the GM of the campaign.
+
+- POST /campaigns
+  • Creates a new campaign (requires title and system).
+  • Authenticated user becomes the GM.
+  • Generates a random 6-character invite code.
+
+- GET /campaigns/mine
+  • Retrieves all campaigns where the user is either the GM or a player.
+  • Adds `isGM` boolean for frontend use.
+
+- DELETE /campaigns/:id
+  • Deletes a campaign if the authenticated user is the GM.
+
+- GET /campaigns/:id
+  • Fetches detailed campaign information including GM and player profiles.
+
+- POST /campaigns/join/:code
+  • Allows users to join campaigns via invite code.
+  • Validates against joining a campaign twice or joining as the GM.
+
+Models Used:
+- `Campaign` (Mongoose campaign model)
+- `User` (Mongoose user model)
+
+Middleware Dependencies:
+- `multer` (for handling campaign image uploads — expects form-data with field `image`)
+- `protect` (JWT authentication middleware — assumed applied at route level)
+
+Libraries Used:
+- `multer` (file upload middleware)
+- `path` (for filesystem path handling)
+- `fs` (for checking/creating upload directories)
+
+Notes:
+- Campaign images are saved to `/uploads/campaigns/` with unique filenames.
+- Invite codes are generated using a random 6-character uppercase string.
+- Ownership checks ensure only GMs can upload or delete campaign resources.
+- Proper status codes (400, 403, 404, 500) are consistently used for errors.
+=========================================================================================
+
+=== File: backend/controllers/mapController.js ===
+
+Purpose:
+- Handles the uploading and association of map image files with campaigns in ArcanaTable.
+- Sets an uploaded map as the campaign’s `activeMap` for future session use.
+
+Endpoints:
+- POST /maps/upload/:campaignId
+  • Uploads a new map image for a campaign.
+  • Updates the campaign’s `activeMap` field to point to the uploaded image path.
+
+Models Used:
+- `Campaign` (Mongoose campaign model)
+
+Middleware Dependencies:
+- Assumes standard authentication and file upload middleware are applied before hitting this controller.
+- Expects Multer to provide `req.file` for uploaded file access.
+
+Libraries Used:
+- (None directly inside the controller — relies on Express and Multer via middleware.)
+
+Notes:
+- Uploaded map images are stored under `/uploads/maps/`.
+- Proper validation for:
+  - Missing file uploads (400 Bad Request)
+  - Nonexistent campaign IDs (404 Not Found)
+  - General server errors (500 Internal Server Error).
+- Console logs success with uploaded file details for server tracking.
+=============================================================================================
+
+=== File: backend/controllers/messageController.js ===
+
+Purpose:
+- Manages private messaging functionality between users inside ArcanaTable.
+- Allows users to send, retrieve, read, and delete messages.
+
+Endpoints:
+- POST /messages/send
+  • Sends a message from the logged-in user to another user (identified by display name).
+  • Creates a new Message document.
+
+- GET /messages
+  • Retrieves all messages received by the logged-in user.
+  • Messages are sorted by most recent first.
+
+- GET /messages/unread
+  • Returns the count of unread messages for the logged-in user.
+
+- PATCH /messages/:id/read
+  • Marks a specific message as "read" for the logged-in user.
+
+- DELETE /messages/:id
+  • Deletes a specific message received by the logged-in user.
+
+Models Used:
+- `Message` (Mongoose message model)
+- `User` (Mongoose user model)
+
+Middleware Dependencies:
+- `protect` (JWT authentication middleware — assumed applied at route level)
+
+Libraries Used:
+- (Standard Mongoose + Express — no special libraries beyond those.)
+
+Notes:
+- Only the message **recipient** is allowed to mark a message as read or delete it.
+- Consistent use of status codes:
+  - 404 (Not Found) if trying to read/delete non-existing or unauthorized messages.
+  - 500 (Server Error) for general failures.
+- Messages include sender information via population (`populate('sender', 'displayName')`).
+- Logging provided for tracking unread counts and message transactions.
+=============================================================================================
+
+=== File: backend/controllers/userController.js ===
+
+Purpose:
+- Handles user profile operations for ArcanaTable.
+- Manages uploading and saving of user avatar images to the server.
+
+Endpoints:
+- POST /user/avatar
+  • Uploads and saves a new avatar image for the authenticated user.
+  • Updates the user's `avatarUrl` field in the database.
+
+Models Used:
+- `User` (Mongoose user model)
+
+Middleware Dependencies:
+- `avatarUploadMiddleware` (handles multipart/form-data file uploads, expects field `avatar`)
+- `protect` (JWT authentication middleware — assumed applied at route level)
+
+Libraries Used:
+- `multer` (file upload handling)
+- `path` (filesystem path operations)
+- `fs` (filesystem directory creation)
+
+Notes:
+- Avatar images are stored under `/uploads/avatars/`.
+- Filenames are generated based on user ID with a static "-avatar" suffix (e.g., `userId-avatar.png`).
+- Automatically creates the avatars directory if it doesn't already exist.
+- Consistent error handling:
+  - 400 (Bad Request) if no file is uploaded.
+  - 500 (Internal Server Error) on upload failure.
+- Successful uploads return the avatar URL relative to the server root.
+============================================================================================
+
+=== File: backend/middleware/authMiddleware.js ===
+
+Purpose:
+- Provides middleware to authenticate users in ArcanaTable using JWT tokens.
+- Attaches the authenticated user object to the request for further downstream access.
+
+Functions:
+- protect (middleware)
+  • Verifies JWT from the Authorization header.
+  • Decodes the token and fetches the corresponding user from the database.
+  • Attaches `req.user` if authentication succeeds.
+  • Responds with 401 Unauthorized if token is missing, invalid, or user is not found.
+
+Models Used:
+- `User` (Mongoose user model)
+
+Middleware Dependencies:
+- None (standalone middleware function)
+
+Libraries Used:
+- `jsonwebtoken` (for verifying JWT tokens)
+
+Notes:
+- Expects Authorization headers in the format `Bearer <token>`.
+- Removes the user's password field during user fetch (`select('-password')`).
+- Consistent 401 responses for:
+  - Missing token
+  - Invalid or expired token
+  - Non-existent user
+- Provides verbose logging for debugging token issues and authentication flows.
+==========================================================================================
+
+=== File: backend/models/Campaign.js ===
+
+Purpose:
+- Defines the Mongoose schema and model for Campaigns in ArcanaTable.
+- A campaign includes metadata about the game world, players, and mapping.
+
+Schema Fields:
+- imageUrl: (String) — Relative path to the uploaded campaign image.
+- mapImage: (String) — Base64 string representing the live tabletop map.
+- activeMap: (String) — Path to the currently active campaign map file.
+- title: (String, Required) — Title of the campaign.
+- system: (String, Required) — Tabletop RPG system (e.g., "D&D 5e").
+- module: (String) — Optional published module or custom adventure name.
+- gm: (ObjectId, Required) — Reference to the User document acting as the Game Master.
+- players: (Array<ObjectId>) — List of User references representing campaign players.
+- inviteCode: (String, Unique, Required) — Unique code to allow users to join the campaign.
+- createdAt: (Date, Default: Now) — Timestamp of campaign creation.
+
+Pre-save/Pre-validate Hooks:
+- Automatically generates a unique 6-character invite code if none is provided.
+- Ensures that generated invite codes do not conflict with existing campaigns.
+
+Libraries Used:
+- `mongoose` (MongoDB object modeling)
+
+Notes:
+- Campaigns cannot exist without a GM assigned (`gm` field is required).
+- Players are stored as references but are not automatically populated unless explicitly queried.
+- Invite codes are generated using a custom generator to prevent collisions.
+=================================================================================================
+
+=== File: backend/models/Character.js ===
+
+Purpose:
+- Defines the Mongoose schema and model for storing player characters in ArcanaTable.
+- Captures a complete 5e Dungeons & Dragons character sheet including identity, abilities, spells, inventory, and traits.
+
+Schema Fields:
+- Core Identity:
+  • name (legacy field)
+  • charname, playername, class, level, race, background, alignment, experiencepoints
+
+- Appearance and Physical Attributes:
+  • portraitImage, appearance, age, height, weight, eyes, skin, hair
+
+- Ability Scores:
+  • strscore/dexscore/conscore/intscore/wisscore/chascore
+  • strmod/dexmod/conmod/intmod/wismod/chamod
+
+- Saving Throws:
+  • Individual saving throws and proficiency flags for each core ability
+
+- Combat:
+  • ac (Armor Class), initiative, speed, maxhp, currenthp, temphp
+
+- Death Saves:
+  • Tracks successes and failures during death saving throws
+  • Includes hitdice tracking
+
+- Attacks:
+  • Array of attack entries (name, attack bonus, damage, type)
+  • Free-text `attack-notes` field
+
+- Skills:
+  • Array of skills, each linked to a stat and proficiency flag
+
+- Proficiency and Inspiration:
+  • Global modifiers for proficiency bonus and inspiration
+
+- Spellcasting:
+  • Core fields: spellcasting class, ability, DC, attack bonus
+  • Detailed array-based spell slots and lists
+  • Simplified spell slots and spells fields for textarea storage
+
+- Allies and Organizations:
+  • Allies description, organization name, and symbol image (base64 or path)
+
+- Equipment and Treasure:
+  • Array of equipment items (name and description)
+  • Coins (cp, sp, ep, gp, pp)
+  • Treasure items (free-text array)
+
+- Personality Traits:
+  • Personality traits, ideals, bonds, flaws, features, additional features
+
+- Wisdom and Proficiencies:
+  • Passive Wisdom score and other proficiencies/languages block
+
+- Metadata:
+  • System (e.g., D&D 5e)
+  • Backstory
+  • isPublic flag (if the character is visible publicly)
+  • creator (User reference)
+
+Pre-save/Pre-validate Hooks:
+- None (schema relies on incoming client data structure).
+
+Libraries Used:
+- `mongoose` (MongoDB object modeling)
+
+Notes:
+- Uses automatic Mongoose timestamps (`createdAt`, `updatedAt`).
+- Supports both structured spellcasting arrays and fallback textarea spellblocks.
+- All numeric fields (scores, modifiers, slots) are set up for future validation or derived calculations if needed.
+- Optimized for flexible use across different RPG systems beyond D&D 5e.
+================================================================================================
+
+=== File: backend/models/Message.js ===
+
+Purpose:
+- Defines the Mongoose schema and model for private messaging between users inside ArcanaTable.
+- Supports sending, receiving, and reading in-app messages.
+
+Schema Fields:
+- sender: (ObjectId, Required) — Reference to the User who sent the message.
+- recipient: (ObjectId, Required) — Reference to the User who is receiving the message.
+- subject: (String, Required) — Subject line of the message.
+- body: (String, Required) — Main body content of the message.
+- isRead: (Boolean, Default: false) — Tracks if the recipient has opened/read the message.
+- sentAt: (Date, Default: Now) — Timestamp when the message was created.
+
+Pre-save/Pre-validate Hooks:
+- None — relies on incoming request validation and Mongoose schema constraints.
+
+Libraries Used:
+- `mongoose` (MongoDB object modeling)
+
+Notes:
+- Message read status (`isRead`) is updated separately via PATCH routes.
+- Sent timestamp (`sentAt`) automatically populated on message creation.
+- Relationships allow easy population of sender and recipient user display names in queries.
+=================================================================================================
+
+=== File: backend/models/User.js ===
+
+Purpose:
+- Defines the Mongoose schema and model for ArcanaTable user accounts.
+- Manages authentication, profile information, subscription status, and onboarding data.
+
+Schema Fields:
+- Basic Information:
+  • firstName (String, Required) — User's first name.
+  • lastName (String, Required) — User's last name.
+  • email (String, Required, Unique) — User's login email address.
+  • password (String, Required) — Securely hashed password.
+
+- Profile and Account:
+  • displayName (String) — Publicly visible name.
+  • avatarUrl (String, Default: '') — URL or path to user's avatar image.
+  • subscriptionTier (String, Enum: Free, Pro, Premium, Default: Free) — Subscription status.
+  • hoursPlayed (Number, Default: 0) — Tracks gameplay hours.
+
+- Onboarding and Preferences:
+  • language (String, Default: English) — Preferred UI language.
+  • experienceLevel (String, Enum: Beginner, Intermediate, Advanced) — TTRPG experience.
+  • role (String, Enum: Player, GM, Both) — Desired role in campaigns.
+  • groupType (String) — Preferred group type (e.g., Casual, Hardcore).
+  • playPreferences (Array<String>) — List of play style preferences.
+  • onboardingComplete (Boolean, Default: false) — Tracks if onboarding flow is finished.
+
+- Timestamps:
+  • Automatically generates createdAt and updatedAt fields.
+
+Pre-save/Pre-validate Hooks:
+- Pre-save middleware:
+  • Automatically hashes passwords using bcrypt before saving.
+  • Hashing only triggered if the password field is modified.
+
+Instance Methods:
+- matchPassword(enteredPassword):
+  • Compares a plaintext password to the stored hashed password.
+  • Returns a Promise<boolean> indicating match success.
+
+Libraries Used:
+- `mongoose` (MongoDB object modeling)
+- `bcrypt` (Password hashing and comparison)
+
+Notes:
+- Passwords are never stored in plaintext.
+- Password hashing salt factor is set to 10.
+- Email field must be unique across all user accounts.
+================================================================================================
+
+=== File: backend/routes/auth.js ===
+
+Purpose:
+- Defines Express routes related to user authentication and onboarding for ArcanaTable.
+- Handles signing up, logging in, onboarding completion, and retrieving the current user's profile.
+- Protects private routes using JWT middleware authentication.
+
+Defined Routes:
+- POST /signup
+  • Registers a new user (email, password, firstName, lastName).
+  • Public access.
+
+- POST /login
+  • Authenticates an existing user and returns a JWT token and user profile.
+  • Public access.
+
+- PATCH /onboarding
+  • Allows an authenticated user to complete onboarding setup (preferences, play style, etc.).
+  • Private (requires a valid JWT).
+
+- GET /me
+  • Returns the authenticated user's profile (excluding password).
+  • Private (requires a valid JWT).
+
+Middleware and Libraries Used:
+- `express` — Web framework for defining routes.
+- `express.Router` — Modular route instance.
+- `protect` — JWT-based authentication middleware.
+- `authController` — Contains logic for signup, login, onboarding completion.
+- `User` — Mongoose model for fetching user data.
+
+Notes:
+- All private routes use `protect` middleware to ensure only authenticated users can access.
+- `/me` route manually handles fetching and returning the user profile.
+- Logging added for both success and failure cases to aid in debugging.
+===============================================================================================
+
+=== File: backend/routes/campaign.js ===
+
+Purpose:
+- Defines Express routes for campaign operations in ArcanaTable.
+- Allows authenticated users to create, join, delete, upload images to, and fetch campaigns.
+- Protects all routes using JWT authentication middleware.
+
+Defined Routes:
+- POST /campaigns
+  • Creates a new campaign.
+  • Accepts optional campaign image uploads via `campaignImageUploadMiddleware`.
+  • Private (requires JWT authentication).
+
+- GET /campaigns/mine
+  • Retrieves all campaigns where the user is either the GM or a player.
+  • Private (requires JWT authentication).
+
+- POST /campaigns/join/:code
+  • Allows a user to join a campaign using a unique invite code.
+  • Private (requires JWT authentication).
+
+- DELETE /campaigns/:id
+  • Deletes a campaign if the authenticated user is the GM of that campaign.
+  • Private (requires JWT authentication).
+
+- PATCH /campaigns/:id/image
+  • Uploads or updates the campaign's image.
+  • Uses `campaignImageUploadMiddleware` to handle multipart/form-data uploads.
+  • Private (requires JWT authentication).
+
+- GET /campaigns/:id
+  • Fetches detailed campaign information by campaign ID.
+  • Private (requires JWT authentication).
+
+Middleware and Libraries Used:
+- `express` — Framework for defining HTTP routes.
+- `express.Router` — Modular routing instance.
+- `protect` — JWT-based authentication middleware to restrict access.
+- `campaignImageUploadMiddleware` — Multer-based file upload middleware.
+- `campaignController` — Business logic for all campaign operations.
+
+Notes:
+- Debug logging (`console.log`) is included at the top of the file to verify controller imports during development.
+- All routes adhere to RESTful conventions (resource-based URIs and proper HTTP methods).
+- Cleanly separates middleware concerns (authentication and file upload).
+================================================================================================
+
+=== File: backend/routes/character.js ===
+
+Purpose:
+- Defines Express routes for character sheet operations in ArcanaTable.
+- Enables users to create, retrieve, update, and delete their own D&D 5e character sheets.
+- Protects all operations using JWT authentication middleware (`protect`).
+
+Defined Routes:
+- POST /api/characters
+  • Creates a new character sheet.
+  • Automatically associates the character with the authenticated user's ID.
+  • Private (requires JWT authentication).
+
+- GET /api/characters
+  • Retrieves all characters created by the authenticated user.
+  • Private (requires JWT authentication).
+
+- GET /api/characters/:id
+  • Retrieves a specific character sheet by ID if it belongs to the authenticated user.
+  • Private (requires JWT authentication).
+
+- PUT /api/characters/:id
+  • Updates an existing character sheet owned by the authenticated user.
+  • Private (requires JWT authentication).
+
+- DELETE /api/characters/:id
+  • Deletes a specific character sheet owned by the authenticated user.
+  • Private (requires JWT authentication).
+
+Middleware and Libraries Used:
+- `express` — Web framework for building API routes.
+- `express.Router` — Modular route management.
+- `protect` — JWT-based middleware to verify user identity and authorization.
+- `Character` (Mongoose model) — Interface for MongoDB character documents.
+
+Notes:
+- Server-side console logging is implemented for all major operations for easier debugging.
+- Error handling ensures appropriate HTTP status codes (e.g., 404 for not found, 500 for server error).
+- Follows RESTful standards for CRUD (Create, Read, Update, Delete) operations.
+- Payloads and request parameters are clearly validated at the database level using Mongoose.
+=================================================================================================
+
+=== File: backend/routes/map.js ===
+
+Purpose:
+- Defines Express routes for handling map uploads in ArcanaTable.
+- Allows authenticated users (typically GMs) to upload map images linked to specific campaigns.
+
+Defined Routes:
+- PATCH /maps/:campaignId/map
+  • Uploads a new map image to a campaign.
+  • Uses Multer middleware to handle image upload and storage.
+  • Requires JWT authentication (route protected by `protect` middleware).
+
+Middleware and Libraries Used:
+- `express` — Web framework for API endpoints.
+- `multer` — Middleware to handle multipart/form-data file uploads.
+- `path` — Node.js utility to resolve file paths.
+- `protect` — JWT-based middleware ensuring only authenticated users can access.
+- `upload.single('map')` — Multer config to handle one file at a time (map image upload).
+
+Multer Storage Configuration:
+- Saves uploaded map images under `/uploads/maps/`.
+- Filenames formatted as `map-[timestamp]-[randomnumber].[extension]` for uniqueness.
+- Limits file size to 25MB maximum.
+
+Notes:
+- Map uploads are tied to the campaign's `campaignId` route parameter.
+- Maps are stored physically and path references are saved into the associated Campaign document.
+- No public access is assumed — authorization is enforced at upload time.
+- Logging is available at the controller level (`uploadMap` function).
+=================================================================================================
+
+=== File: backend/routes/messages.js ===
+
+Purpose:
+- Defines Express API routes for ArcanaTable's in-app user messaging system.
+- Enables users to send, retrieve, mark as read, and delete private messages.
+- All routes are protected using JWT authentication middleware (`protect`).
+
+Defined Routes:
+- POST /api/messages
+  • Sends a new message to a specified user (lookup via display name).
+  • Logs incoming message data to console.
+
+- GET /api/messages
+  • Retrieves the inbox (all received messages) for the authenticated user.
+  • Logs user ID initiating the fetch.
+
+- GET /api/messages/unread
+  • Returns a count of unread messages for the authenticated user.
+  • Logs user ID requesting unread count.
+
+- PATCH /api/messages/:id/read
+  • Marks a specific message as "read" by updating its status.
+  • Logs message ID being updated.
+
+- DELETE /api/messages/:id
+  • Deletes a specific message from the authenticated user's inbox.
+  • Logs message ID targeted for deletion.
+
+Middleware and Libraries Used:
+- `express` — Web framework for routing API requests.
+- `protect` — JWT-based authentication middleware to ensure only logged-in users can access messaging routes.
+
+Notes:
+- Basic logging (`console.log`) added to all route handlers for easier backend debugging.
+- Route parameters (`:id`) are used to identify specific messages when marking as read or deleting.
+- The design assumes user IDs are available via the decoded JWT and attached to `req.user`.
+=================================================================================================
+
+=== File: backend/routes/user.js ===
+
+Purpose:
+- Defines Express API routes for ArcanaTable user profile management.
+- Specifically handles uploading and updating the user's avatar image.
+- Route is protected using JWT authentication middleware (`protect`).
+
+Defined Routes:
+- POST /api/user/avatar
+  • Uploads a new avatar image for the authenticated user.
+  • Accepts multipart/form-data with the file field named `avatar`.
+  • Logs middleware and controller function references for sanity checking.
+
+Middleware and Libraries Used:
+- `express` — Web framework for routing API requests.
+- `avatarUploadMiddleware` — Multer-based middleware for parsing image upload.
+- `protect` — JWT-based authentication middleware to ensure user is logged in before uploading.
+- `uploadAvatar` — Controller function that handles avatar saving and updates the user's profile document.
+
+Notes:
+- Avatar files are saved to `/uploads/avatars/`.
+- Filenames are generated using the user’s ID to guarantee uniqueness.
+- Simple and modular — additional profile endpoints can be added here in the future.
+=================================================================================================
+
+=== File: backend/index.js ===
+
+Purpose:
+- Main server bootstrap file for ArcanaTable backend.
+- Sets up Express application with security middleware, static file serving, and API route mounting.
+- Connects to MongoDB using Mongoose.
+- Configures and manages WebSocket server using Socket.IO for real-time campaign interaction.
+
+Major Responsibilities:
+- Environment variable management with `dotenv`.
+- Cross-Origin Resource Sharing (CORS) setup for controlled frontend communication.
+- HTTP security hardening with `helmet`.
+- HTTP request logging using `morgan`.
+- Static file serving from `/uploads` directory (avatars, maps, campaign images).
+- API route linking:
+  • Authentication (`/api/auth`)
+  • User profile and avatars (`/api/user`)
+  • Campaign management (`/api/campaigns`)
+  • Character sheets (`/api/characters`)
+  • Messaging system (`/api/messages`)
+  • Map uploading (`/api/maps`)
+
+WebSocket (Socket.IO) Events:
+- `debug_ping` ➔ Healthcheck for client-server socket connectivity.
+- `join_campaign` ➔ Client joins a specific campaign chat/map room.
+- `chat_message` ➔ Sends chat and dice roll results to campaign room members.
+- `map_settings_updated` ➔ Broadcasts tabletop grid updates (map settings).
+- `map_updated` ➔ Sends updated active map image to campaign players.
+
+Notes:
+- MongoDB connection is critical: process exits on failure to connect.
+- Strict CORS policy: Only whitelisted frontend origins are allowed.
+- Central hub that brings together REST APIs and real-time communication for the platform.
+
+
+

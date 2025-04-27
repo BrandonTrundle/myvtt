@@ -32,7 +32,6 @@ Thumbs.db
 .idea/
 
 # Package locks (optional: keep if you want exact dependency versions)
-package-lock.json
 yarn.lock
 
 # System-specific files
