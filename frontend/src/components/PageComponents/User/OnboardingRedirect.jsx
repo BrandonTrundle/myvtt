@@ -14,7 +14,7 @@
  */
 import { useContext, useEffect } from 'react'; // React hooks for context and side-effects
 import { useNavigate } from 'react-router-dom'; // Navigation hook for programmatic redirects
-import { UserContext } from '../../context/UserContext'; // Global user authentication context
+import { UserContext } from '../../../context/UserContext'; // Global user authentication context
 
 /**
  * OnboardingRedirect Component

@@ -18,8 +18,8 @@
 import React, { useState } from 'react'; // React library and hooks for state management
 import { useNavigate } from 'react-router-dom'; // Hook for programmatic route navigation
 import { apiFetch } from '../utils/api'; // Utility for sending authenticated server requests
-import CampaignCard from '../components/CampaignCard'; // Component for displaying individual campaign cards
-import { useMyCampaigns } from '../hooks/useMyCampaigns'; // Custom hook for fetching and managing user's campaigns
+import CampaignCard from '../components/Campaign/CampaignCard'; // Component for displaying individual campaign cards
+import { useMyCampaigns } from '../components/Campaign/hooks/useMyCampaigns'; // Custom hook for fetching and managing user's campaigns
 
 /**
  * CampaignList Component

@@ -4,9 +4,10 @@ import { UserContext } from '../../context/UserContext';
 import { useSocket } from '../../context/SocketContext';
 import { SOCKET_EVENTS } from '../../constants/SOCKET_EVENTS';
 import MapGrid from './MapGrid/MapGrid';
-import GameTablet from '../PlayUtility/GameTablet';
-import { useChatSocket } from '../../hooks/useChatSocket';
-import { useCampaignData } from '../../hooks/useCampaignData';
+import GameTablet from './GameTablet/GameTablet';
+import { useChatSocket } from './hooks/useChatSocket';
+import { useCampaignData } from '../Campaign/hooks/useCampaignData';
+
 
 const Tabletop = () => {
   console.log("🧩 Tabletop component mounted");

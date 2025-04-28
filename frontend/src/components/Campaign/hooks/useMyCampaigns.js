@@ -16,8 +16,8 @@
  */
 
 import { useEffect, useState, useContext } from 'react'; // React hooks for side effects, state management, and context access
-import { apiFetch } from '../utils/api'; // API utility for making authenticated server requests
-import { UserContext } from '../context/UserContext'; // Context for accessing the currently logged-in user's information
+import { apiFetch } from '../../../utils/api'; // API utility for making authenticated server requests
+import { UserContext } from '../../../context/UserContext'; // Context for accessing the currently logged-in user's information
 
 /**
  * useMyCampaigns Hook

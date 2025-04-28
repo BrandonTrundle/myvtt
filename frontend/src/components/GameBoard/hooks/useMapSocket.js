@@ -16,8 +16,8 @@
  */
 
 import { useEffect } from 'react'; // React hook for managing side effects
-import { useSocket } from '../context/SocketContext'; // Custom hook for accessing the WebSocket connection
-import { SOCKET_EVENTS } from '../constants/SOCKET_EVENTS'; // Centralized WebSocket event name constants
+import { useSocket } from '../../../context/SocketContext'; // Custom hook for accessing the WebSocket connection
+import { SOCKET_EVENTS } from '../../../constants/SOCKET_EVENTS'; // Centralized WebSocket event name constants
 
 /**
  * useMapSocket Hook

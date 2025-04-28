@@ -20,8 +20,8 @@
 import React, { useState, useRef, useEffect, useContext, useCallback } from 'react'; // React core library and hooks
 import { Bell } from 'lucide-react'; // Notification icon (placeholder for future notifications feature)
 import { Link, useNavigate } from 'react-router-dom'; // Router hooks and components
-import { UserContext } from '../context/UserContext'; // Global context for user authentication state
-import { apiFetch, API_BASE } from '../utils/api'; // API utility functions
+import { UserContext } from '../../../context/UserContext'; // Global context for user authentication state
+import { apiFetch, API_BASE } from '../../../utils/api'; // API utility functions
 
 
 const BASE_URL = API_BASE.replace('/api', '');

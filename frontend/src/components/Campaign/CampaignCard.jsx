@@ -24,9 +24,9 @@
 
 import React, { useRef, useState, useEffect } from 'react'; // React library and hooks
 import { useNavigate } from 'react-router-dom'; // Navigation hook for routing
-import { apiFetch, API_BASE, STATIC_BASE } from '../utils/api'; // Utility for making API requests
+import { apiFetch, API_BASE, STATIC_BASE } from '../../utils/api'; // Utility for making API requests
 import { Trash2 } from 'lucide-react'; // Lucide icon for delete button
-import { useUser } from '../context/UserContext'; // Custom hook for accessing the authenticated user
+import { useUser } from '../../context/UserContext'; // Custom hook for accessing the authenticated user
 
 /**
  * CampaignCard Component

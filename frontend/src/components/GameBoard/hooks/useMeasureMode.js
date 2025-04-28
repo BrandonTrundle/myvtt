@@ -1,8 +1,8 @@
 // src/components/GameBoard/MapGrid/hooks/useMeasureMode.js
 
 import { useCallback } from 'react';
-import { SOCKET_EVENTS } from '../../../../constants/SOCKET_EVENTS';
-import { useSocket } from '../../../../context/SocketContext';
+import { SOCKET_EVENTS } from '../../../constants/SOCKET_EVENTS';
+import { useSocket } from '../../../context/SocketContext';
 
 export const useMeasureMode = ({ zoom, selectedToken, isMeasureMode, setMeasureTarget, campaignId }) => {
   const { socket } = useSocket();

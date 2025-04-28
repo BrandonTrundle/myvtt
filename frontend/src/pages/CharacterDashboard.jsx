@@ -18,7 +18,7 @@
  */
 
 import React, { useState, useEffect } from 'react'; // React library and hooks for state management and lifecycle
-import { useCharacters } from '../hooks/useCharacters'; // Custom hook for fetching and managing user's characters
+import { useCharacters } from '../components/CharacterSheet/hooks/useCharacters'; // Custom hook for fetching and managing user's characters
 import CharacterSheetWindow from '../components/CharacterSheet/CharacterSheetWindow'; // Component for displaying the full character sheet in a modal window
 import { apiFetch } from '../utils/api'; // Utility for making authenticated API requests
 

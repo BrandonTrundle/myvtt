@@ -15,7 +15,7 @@
  */
 
 import { useEffect, useState } from 'react'; // React hooks for side effects and local state management
-import { apiFetch } from '../utils/api'; // API utility for sending server requests
+import { apiFetch } from '../../../../utils/api'; // API utility for sending server requests
 
 /**
  * useUnreadMessages Hook

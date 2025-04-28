@@ -1,6 +1,6 @@
 // src/hooks/useTokenDragDrop.js
 import { useCallback } from 'react';
-import { SOCKET_EVENTS } from '../../../../constants/SOCKET_EVENTS';
+import { SOCKET_EVENTS } from '../../../constants/SOCKET_EVENTS';
 
 export const useTokenDragDrop = ({ zoom, setTokens, socket, user, isGM, isMeasureMode, selectedToken, setIsMeasureMode, setMeasureTarget, setSelectedToken, campaignId }) => {
   const gridSize = 64;

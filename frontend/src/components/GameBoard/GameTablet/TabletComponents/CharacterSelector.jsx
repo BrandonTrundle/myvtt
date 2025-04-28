@@ -1,5 +1,6 @@
 import React from 'react';
-import { useCharacters } from '../../hooks/useCharacters';
+import { useCharacters } from '../../../CharacterSheet/hooks/useCharacters';
+
 
 const CharacterSelector = () => {
   const { characters, loading, error } = useCharacters();

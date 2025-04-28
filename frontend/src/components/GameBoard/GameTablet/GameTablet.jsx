@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
-import DiceRoller from './DiceRoller';
-import CharacterSelector from './CharacterSelector';
-import CharacterSheetTab from './CharacterSheetTab';
+import DiceRoller from './TabletComponents/DiceRoller';
+import CharacterSelector from './TabletComponents/CharacterSelector';
+import CharacterSheetTab from './TabletComponents/CharacterSheetTab';
 
 const GameTablet = ({ handleRoll, selectedToken, isMeasureMode, setIsMeasureMode }) => {
   const [tabletWindow, setTabletWindow] = useState(null);

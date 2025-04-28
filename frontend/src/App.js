@@ -18,7 +18,7 @@
 
 import React, { useContext } from 'react'; // React library and hooks for context access
 import { Routes, Route, useLocation } from 'react-router-dom'; // Routing components for client-side navigation
-import Navbar from './components/Navbar'; // Navigation bar for main app layout
+import Navbar from './components/PageComponents/Navigation/Navbar'; // Navigation bar for main app layout
 import Homepage from './pages/Homepage'; // Public homepage component
 import Signup from './pages/Signup'; // User signup form page
 import WelcomeSetup from './pages/WelcomeSetup'; // User onboarding setup wizard

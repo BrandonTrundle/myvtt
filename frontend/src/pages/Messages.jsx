@@ -17,8 +17,8 @@
  */
 
 import React, { useState } from 'react'; // React library and hook for managing local state
-import MessageForm from '../components/MessageForm'; // Component for composing and sending a new message
-import { useMessages } from '../hooks/useMessages'; // Custom hook for managing user messages
+import MessageForm from '../components/PageComponents/Messaging/MessageForm'; // Component for composing and sending a new message
+import { useMessages } from '../components/PageComponents/Messaging/hooks/useMessages'; // Custom hook for managing user messages
 
 /**
  * Messages Component

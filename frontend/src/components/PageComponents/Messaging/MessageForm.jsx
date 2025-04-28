@@ -12,7 +12,7 @@
  */
 
 import React, { useState, useCallback } from 'react'; // React core library and hooks
-import { apiFetch } from '../utils/api'; // Utility for API interactions
+import { apiFetch } from '../../../utils/api'; // Utility for API interactions
 
 /**
  * MessageForm Component

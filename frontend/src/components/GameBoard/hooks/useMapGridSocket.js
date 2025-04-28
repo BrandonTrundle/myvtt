@@ -1,7 +1,7 @@
 // src/components/GameBoard/MapGrid/useMapGridSocket.js
 
 import { useEffect } from 'react';
-import { SOCKET_EVENTS } from '../../../../constants/SOCKET_EVENTS';
+import { SOCKET_EVENTS } from '../../../constants/SOCKET_EVENTS';
 
 export const useMapGridSocket = ({ socket, setTokens }) => {
   useEffect(() => {

@@ -1,6 +1,6 @@
 // src/hooks/useMapSettings.js
 import { useState, useCallback } from 'react';
-import { SOCKET_EVENTS } from '../../../../constants/SOCKET_EVENTS';
+import { SOCKET_EVENTS } from '../../../constants/SOCKET_EVENTS';
 
 export const useMapSettings = ({ socket, isGM }) => {
   const [zoom, setZoom] = useState(1);

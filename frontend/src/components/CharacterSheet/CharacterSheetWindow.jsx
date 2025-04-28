@@ -17,7 +17,7 @@
 import { useEffect, useRef } from 'react'; // React hooks for side-effects and mutable references
 import ReactDOM from 'react-dom/client'; // ReactDOM API for creating portals and mounting into new windows
 import CharacterSheetForm from './CharacterSheetForm'; // Form component to render inside the new popup window
-import submitCharacterForm from '../../utils/characterSubmitHandler'; // Utility function to submit character form data to server
+import submitCharacterForm from './characterSubmitHandler'; // Utility function to submit character form data to server
 
 /**
  * CharacterSheetWindow Component

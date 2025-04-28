@@ -16,7 +16,7 @@
  */
 
 import { useEffect, useState, useCallback } from 'react'; // React hooks for side effects, state management, and stable function references
-import { apiFetch } from '../utils/api'; // API utility for making server requests
+import { apiFetch } from '../../../../utils/api'; // API utility for making server requests
 
 /**
  * useMessages Hook

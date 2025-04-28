@@ -15,7 +15,7 @@
  */
 
 import { useEffect, useState } from 'react'; // React hooks for state and side effects
-import { apiFetch } from '../utils/api'; // Utility for making authenticated API requests
+import { apiFetch } from '../../../utils/api'; // Utility for making authenticated API requests
 
 /**
  * useCharacters Hook

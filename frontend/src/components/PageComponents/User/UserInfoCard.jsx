@@ -21,10 +21,10 @@
 
 import React, { useRef, useState, useEffect, useContext, useCallback } from 'react'; // React imports for refs, state, effects, context, and callbacks
 import { Bell, Mail } from 'lucide-react'; // Lucide icons for notifications and messaging
-import { UserContext } from '../../context/UserContext'; // Context providing user profile and authentication functions
+import { UserContext } from '../../../context/UserContext'; // Context providing user profile and authentication functions
 import { useNavigate } from 'react-router-dom'; // Hook for programmatic route navigation
-import { apiFetch, API_BASE } from '../../utils/api'; // API utility function and base URL constant
-import { useUnreadMessages } from '../../hooks/useUnreadMessages'; // Custom hook to detect if there are unread messages
+import { apiFetch, API_BASE } from '../../../utils/api'; // API utility function and base URL constant
+import { useUnreadMessages } from '../Messaging/hooks/useUnreadMessages';// Custom hook to detect if there are unread messages
 
 /**
  * UserInfoCard Component
