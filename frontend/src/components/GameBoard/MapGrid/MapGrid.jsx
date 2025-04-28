@@ -18,7 +18,7 @@ import TokenLayer from './TokenLayer';
 import MapControls from './MapControls';
 
 const MapGrid = ({ 
-  campaign, isGM, selectedToken, setSelectedToken, isMeasureMode, setIsMeasureMode, measureTarget, setMeasureTarget
+  campaign, isGM, selectedToken, setSelectedToken, isMeasureMode, setIsMeasureMode, measureTarget, setMeasureTarget 
 }) => {
   const { socket } = useSocket();
   const { user } = useContext(UserContext);
@@ -29,9 +29,25 @@ const MapGrid = ({
   const campaignId = campaign?._id;
 
   const { zoom, showGrid, setZoom, setShowGrid, handleZoomChange, toggleGrid } = useMapSettings({ socket, isGM });
-  const { handleMapClick, handleMouseMove, calculateDistance } = useMeasureMode({ zoom, selectedToken, isMeasureMode, setMeasureTarget });
+  const { handleMapClick, handleMouseMove, handleMouseLeave, calculateDistance } = useMeasureMode({
+    zoom,
+    selectedToken,
+    isMeasureMode,
+    setMeasureTarget,
+    campaignId,
+  });
   const { handleDragOver, handleDrop, handleTokenDragStart, handleTokenDragEnd } = useTokenDragDrop({
-    zoom, setTokens, socket, user, isGM, isMeasureMode, selectedToken, setIsMeasureMode, setMeasureTarget, setSelectedToken, campaignId
+    zoom,
+    setTokens,
+    socket,
+    user,
+    isGM,
+    isMeasureMode,
+    selectedToken,
+    setIsMeasureMode,
+    setMeasureTarget,
+    setSelectedToken,
+    campaignId,
   });
 
   useMapSocket(campaignId, (imageUrl) => {
@@ -46,9 +62,20 @@ const MapGrid = ({
 
   React.useEffect(() => {
     if (!socket) return;
+
     const handlePlayerMeasuring = ({ tokenId, from, to }) => {
-      setOtherPlayersMeasurements((prev) => ({ ...prev, [tokenId]: { from, to } }));
+      setOtherPlayersMeasurements((prev) => {
+        if (from === null || to === null) {
+          // Remove measurement if it's null (player stopped measuring)
+          const copy = { ...prev };
+          delete copy[tokenId];
+          return copy;
+        }
+        // Otherwise, update measurement normally
+        return { ...prev, [tokenId]: { from, to } };
+      });
     };
+
     socket.on(SOCKET_EVENTS.PLAYER_MEASURING, handlePlayerMeasuring);
     return () => socket.off(SOCKET_EVENTS.PLAYER_MEASURING, handlePlayerMeasuring);
   }, [socket]);
@@ -100,11 +127,16 @@ const MapGrid = ({
 
   return (
     <div className="map-grid mt-4 space-y-4">
-      <h3 className="text-lg font-bold">🗺️ Campaign Map</h3>
+      <h3 className="text-lg font-bold">🗘️ Campaign Map</h3>
 
       {isGM && (
         <div className="mb-2">
-          <input type="file" accept="image/*" onChange={handleFileChange} className="mb-2" />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="mb-2"
+          />
         </div>
       )}
 
@@ -115,7 +147,14 @@ const MapGrid = ({
         showGrid={showGrid}
       />
 
-      <div onDragOver={handleDragOver} onDrop={handleDrop} onClick={handleMapClick} onMouseMove={handleMouseMove} className="relative">
+      <div
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+        onClick={handleMapClick}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        className="relative"
+      >
         <MapCanvas mapUrl={mapUrl} zoom={zoom} showGrid={showGrid} />
         <TokenLayer
           tokens={tokens}
@@ -128,19 +167,51 @@ const MapGrid = ({
           onTokenDragEnd={handleTokenDragEnd}
         />
 
-        {(isMeasureMode && selectedToken && measureTarget) || Object.keys(otherPlayersMeasurements).length > 0 ? (
+        {(isMeasureMode && selectedToken && measureTarget) ||
+        Object.keys(otherPlayersMeasurements).length > 0 ? (
           <svg
             className="absolute top-0 left-0"
-            style={{ width: `${mapWidth}px`, height: `${mapHeight}px`, transform: `scale(${zoom})`, transformOrigin: 'top left', pointerEvents: 'none' }}
+            style={{
+              width: `${mapWidth}px`,
+              height: `${mapHeight}px`,
+              transform: `scale(${zoom})`,
+              transformOrigin: "top left",
+              pointerEvents: "none",
+            }}
           >
+            {/* Other players' measurements */}
             {Object.entries(otherPlayersMeasurements).map(([tokenId, { from, to }]) => {
               const startX = Math.floor(from.x / gridSize) * gridSize + gridSize / 2;
               const startY = Math.floor(from.y / gridSize) * gridSize + gridSize / 2;
               const endX = Math.floor(to.x / gridSize) * gridSize + gridSize / 2;
               const endY = Math.floor(to.y / gridSize) * gridSize + gridSize / 2;
-              return <line key={tokenId} x1={startX} y1={startY} x2={endX} y2={endY} stroke="magenta" strokeWidth="2" markerEnd="url(#arrowhead)" />;
+
+              return (
+                <g key={tokenId}>
+                  <line
+                    x1={startX}
+                    y1={startY}
+                    x2={endX}
+                    y2={endY}
+                    stroke="magenta"
+                    strokeWidth="2"
+                    markerEnd="url(#arrowhead)"
+                  />
+                  <text
+                    x={(startX + endX) / 2}
+                    y={(startY + endY) / 2}
+                    fill="magenta"
+                    fontSize="16"
+                    fontWeight="bold"
+                    textAnchor="middle"
+                  >
+                    {calculateDistance(from, to)} ft
+                  </text>
+                </g>
+              );
             })}
 
+            {/* Your own measurement */}
             {isMeasureMode && selectedToken && measureTarget && (() => {
               const startX = Math.floor(selectedToken.x / gridSize) * gridSize + gridSize / 2;
               const startY = Math.floor(selectedToken.y / gridSize) * gridSize + gridSize / 2;
@@ -149,16 +220,39 @@ const MapGrid = ({
 
               return (
                 <>
-                  <line x1={startX} y1={startY} x2={endX} y2={endY} stroke="cyan" strokeWidth="3" markerEnd="url(#arrowhead)" />
-                  <text x={(startX + endX) / 2} y={(startY + endY) / 2} fill="white" fontSize="16" fontWeight="bold" textAnchor="middle">
+                  <line
+                    x1={startX}
+                    y1={startY}
+                    x2={endX}
+                    y2={endY}
+                    stroke="cyan"
+                    strokeWidth="3"
+                    markerEnd="url(#arrowhead)"
+                  />
+                  <text
+                    x={(startX + endX) / 2}
+                    y={(startY + endY) / 2}
+                    fill="white"
+                    fontSize="16"
+                    fontWeight="bold"
+                    textAnchor="middle"
+                  >
                     {calculateDistance(selectedToken, measureTarget)} ft
                   </text>
                 </>
               );
             })()}
 
+            {/* Arrowhead marker */}
             <defs>
-              <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+              <marker
+                id="arrowhead"
+                markerWidth="10"
+                markerHeight="7"
+                refX="10"
+                refY="3.5"
+                orient="auto"
+              >
                 <polygon points="0 0, 10 3.5, 0 7" fill="cyan" />
               </marker>
             </defs>

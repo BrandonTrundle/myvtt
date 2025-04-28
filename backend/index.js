@@ -232,6 +232,20 @@ io.on('connection', (socket) => {
     io.to(campaignId).emit('token_moved', { ...tokenData });
   });
 
+  socket.on('player_measuring', (data) => {
+    const { campaignId, tokenId, from, to } = data;
+    
+    if (!campaignId) {
+      console.warn('⚠️ Invalid PLAYER_MEASURING payload:', data);
+      return;
+    }
+  
+    console.log(`📏 Relaying PLAYER_MEASURING for campaign ${campaignId}`, { tokenId, from, to });
+  
+    // Rebroadcast the measuring event to everyone else in the same campaign room
+    socket.to(campaignId).emit('player_measuring', { tokenId, from, to });
+  });
+
   socket.on('disconnect', () => {
     console.log('🔌 WebSocket disconnected:', socket.id);
   });

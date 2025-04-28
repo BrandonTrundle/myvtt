@@ -23,5 +23,5 @@ export const SOCKET_EVENTS = {
   MAP_UPDATED: 'map_updated',              // Event when the campaign map image is updated
   DEBUG_PING: 'debug_ping',                // Event used for testing/debugging socket connectivity
   TOKEN_SPAWNED: 'token_spawned',           // ✅ NEW: Event when a token is placed on the board
-  PLAYER_MEASURING: 'PLAYER_MEASURING',    // Event for player measuring distance on the map
+  PLAYER_MEASURING: 'player_measuring',    // Event for player measuring distance on the map
 };
