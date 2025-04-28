@@ -7,24 +7,31 @@ import MapGrid from './MapGrid/MapGrid';
 import GameTablet from './GameTablet/GameTablet';
 import { useChatSocket } from './hooks/useChatSocket';
 import { useCampaignData } from '../Campaign/hooks/useCampaignData';
-
+import { useFetchMap } from './hooks/useFetchMap';
+import { STATIC_BASE } from '../../utils/api';
 
 const Tabletop = () => {
   console.log("🧩 Tabletop component mounted");
   const { campaignId } = useParams();
   const { user } = useContext(UserContext);
   const { socket, joinCampaign } = useSocket();
-  const [measureTarget, setMeasureTarget] = useState(null);
 
+  const [measureTarget, setMeasureTarget] = useState(null);
   const [campaign, setCampaign] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
+  const [mapUrl, setMapUrl] = useState(null);
   const chatRef = useRef(null);
   const [selectedToken, setSelectedToken] = useState(null);
   const [isMeasureMode, setIsMeasureMode] = useState(false);
   const [activeTab, setActiveTab] = useState('dice');
 
   useCampaignData(campaignId, setCampaign);
+  useFetchMap(campaignId, (fetchedMapUrl) => {
+    if (fetchedMapUrl) {
+      setMapUrl(`${STATIC_BASE}${fetchedMapUrl}`);
+    }
+  });
 
   const handleIncomingMessage = useCallback(
     (msg) => setMessages((prev) => [...prev, msg]),
@@ -109,15 +116,16 @@ const Tabletop = () => {
       <div className="flex-grow overflow-auto bg-black p-16 relative">
         {campaign && (
           <MapGrid
-          campaign={campaign}
-          isGM={isGM}
-          selectedToken={selectedToken}
-          setSelectedToken={setSelectedToken}
-          isMeasureMode={isMeasureMode}
-          setIsMeasureMode={setIsMeasureMode}
-          measureTarget={measureTarget}
-          setMeasureTarget={setMeasureTarget}
-        />
+            campaign={campaign}
+            mapUrl={mapUrl}
+            isGM={isGM}
+            selectedToken={selectedToken}
+            setSelectedToken={setSelectedToken}
+            isMeasureMode={isMeasureMode}
+            setIsMeasureMode={setIsMeasureMode}
+            measureTarget={measureTarget}
+            setMeasureTarget={setMeasureTarget}
+          />
         )}
         <GameTablet
           handleRoll={handleRoll}

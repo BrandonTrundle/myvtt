@@ -6,52 +6,55 @@ import { useSocket } from '../../../context/SocketContext';
 
 export const useMeasureMode = ({ zoom, selectedToken, isMeasureMode, setMeasureTarget, campaignId }) => {
   const { socket } = useSocket();
+  const gridSize = 64; // size of one grid square in pixels
+
+  const snapToCenter = (pos) => {
+    const gridCol = Math.floor(pos.x / gridSize);
+    const gridRow = Math.floor(pos.y / gridSize);
+    return {
+      x: gridCol * gridSize + gridSize / 2,
+      y: gridRow * gridSize + gridSize / 2,
+    };
+  };
 
   const calculateDistance = useCallback((start, end) => {
-    const gridSize = 64;
-    const startCol = Math.floor((start.x + 32) / gridSize);
-    const startRow = Math.floor((start.y + 32) / gridSize);
-    const endCol = Math.floor((end.x) / gridSize);
-    const endRow = Math.floor((end.y) / gridSize);
+    const startSnapped = snapToCenter(start);
+    const endSnapped = snapToCenter(end);
 
-    const dx = Math.abs(endCol - startCol);
-    const dy = Math.abs(endRow - startRow);
+    const dx = Math.abs(endSnapped.x - startSnapped.x);
+    const dy = Math.abs(endSnapped.y - startSnapped.y);
 
-    const diagonalMoves = Math.min(dx, dy);
-    const straightMoves = Math.abs(dx - dy);
+    const squaresX = Math.floor(dx / gridSize);
+    const squaresY = Math.floor(dy / gridSize);
+
+    const diagonalMoves = Math.min(squaresX, squaresY);
+    const straightMoves = Math.abs(squaresX - squaresY);
 
     const distanceFeet = (diagonalMoves * 10) + (straightMoves * 5);
     return distanceFeet;
   }, []);
 
   const handleMapClick = useCallback((e) => {
-    // (Unused yet)
+    // (Unused for now)
   }, []);
 
   const handleMouseMove = useCallback((e) => {
-    if (!isMeasureMode || !selectedToken) {
-      return;
-    }
+    if (!isMeasureMode || !selectedToken) return;
 
     const rect = e.currentTarget.getBoundingClientRect();
     const rawX = (e.clientX - rect.left) / zoom;
     const rawY = (e.clientY - rect.top) / zoom;
 
-    const gridSize = 64;
-    const gridCol = Math.floor(rawX / gridSize);
-    const gridRow = Math.floor(rawY / gridSize);
+    const target = snapToCenter({ x: rawX, y: rawY });
+    const origin = snapToCenter({ x: selectedToken.x, y: selectedToken.y });
 
-    const snappedX = gridCol * gridSize + gridSize / 2;
-    const snappedY = gridRow * gridSize + gridSize / 2;
-
-    const target = { x: snappedX, y: snappedY };
     setMeasureTarget(target);
 
-    if (socket && selectedToken && campaignId) {
+    if (socket && campaignId) {
       socket.emit(SOCKET_EVENTS.PLAYER_MEASURING, {
         campaignId,
         tokenId: selectedToken.id,
-        from: { x: selectedToken.x, y: selectedToken.y },
+        from: origin,
         to: target,
       });
     }

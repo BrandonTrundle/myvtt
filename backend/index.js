@@ -240,7 +240,7 @@ io.on('connection', (socket) => {
       return;
     }
   
-    console.log(`📏 Relaying PLAYER_MEASURING for campaign ${campaignId}`, { tokenId, from, to });
+    //console.log(`📏 Relaying PLAYER_MEASURING for campaign ${campaignId}`, { tokenId, from, to });
   
     // Rebroadcast the measuring event to everyone else in the same campaign room
     socket.to(campaignId).emit('player_measuring', { tokenId, from, to });

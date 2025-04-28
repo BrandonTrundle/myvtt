@@ -3,10 +3,8 @@
 import React, { useContext } from 'react';
 import { useSocket } from '../../../context/SocketContext';
 import { UserContext } from '../../../context/UserContext';
-import { STATIC_BASE } from '../../../utils/api';
 import { useMapSocket } from '../hooks/useMapSocket';
-import { useFetchMap } from '../hooks/useFetchMap';
-import { SOCKET_EVENTS } from '../../../constants/SOCKET_EVENTS'; //
+import { SOCKET_EVENTS } from '../../../constants/SOCKET_EVENTS';
 import { useMapSettings } from '../hooks/useMapSettings';
 import { useTokenDragDrop } from '../hooks/useTokenDragDrop';
 import { useMeasureMode } from '../hooks/useMeasureMode';
@@ -14,24 +12,27 @@ import { useMapGridSocket } from '../hooks/useMapGridSocket';
 import { useMapUpload } from '../hooks/useMapUpload';
 import { useTokenSelection } from '../hooks/useTokenSelection';
 
-
-
-import { GRID_SIZE, MAP_TILE_WIDTH, MAP_TILE_HEIGHT } from './Constants/mapConstants';
+import { MAP_TILE_WIDTH, MAP_TILE_HEIGHT } from './Constants/mapConstants';
 
 import MapCanvas from './Canvas/MapCanvas';
 import MapControls from './Controls/MapControls';
 import TokenLayer from './Layers/TokenLayer';
 import MeasureLayer from './Layers/MeasureLayer';
 
-
 const MapGrid = ({
-  campaign, isGM, selectedToken, setSelectedToken,
-  isMeasureMode, setIsMeasureMode, measureTarget, setMeasureTarget
+  campaign,
+  isGM,
+  selectedToken,
+  setSelectedToken,
+  isMeasureMode,
+  setIsMeasureMode,
+  measureTarget,
+  setMeasureTarget,
+  mapUrl,
 }) => {
   const { socket } = useSocket();
   const { user } = useContext(UserContext);
 
-  const [mapUrl, setMapUrl] = React.useState(null);
   const [tokens, setTokens] = React.useState([]);
   const [otherPlayersMeasurements, setOtherPlayersMeasurements] = React.useState({});
 
@@ -39,27 +40,34 @@ const MapGrid = ({
 
   const { zoom, showGrid, setZoom, setShowGrid, handleZoomChange, toggleGrid } = useMapSettings({ socket, isGM });
   const { handleMapClick, handleMouseMove, handleMouseLeave, calculateDistance } = useMeasureMode({
-    zoom, selectedToken, isMeasureMode, setMeasureTarget, campaignId,
+    zoom,
+    selectedToken,
+    isMeasureMode,
+    setMeasureTarget,
+    campaignId,
   });
   const { handleDragOver, handleDrop, handleTokenDragStart, handleTokenDragEnd } = useTokenDragDrop({
-    zoom, setTokens, socket, user, isGM, isMeasureMode, selectedToken,
-    setIsMeasureMode, setMeasureTarget, setSelectedToken, campaignId,
+    zoom,
+    setTokens,
+    socket,
+    user,
+    isGM,
+    isMeasureMode,
+    selectedToken,
+    setIsMeasureMode,
+    setMeasureTarget,
+    setSelectedToken,
+    campaignId,
   });
-  const { handleFileUpload } = useMapUpload({ campaignId, campaign, setMapUrl, socket, isGM });
+  const { handleFileUpload } = useMapUpload({ campaignId, campaign, setMapUrl: () => {} , socket, isGM }); // 🛑 no-op for now
   const { handleTokenClick } = useTokenSelection({ user, isGM, setSelectedToken });
 
-  useMapSocket(campaignId, (imageUrl) => {
-    setMapUrl(`${STATIC_BASE}${imageUrl}`);
-  }, ({ zoom, showGrid }) => {
+  useMapSocket(campaignId, () => {}, ({ zoom, showGrid }) => {
     if (zoom !== undefined) setZoom(zoom);
     if (showGrid !== undefined) setShowGrid(showGrid);
   });
 
   useMapGridSocket({ socket, setTokens });
-
-  useFetchMap(campaignId, (fetchedMapUrl) => {
-    if (fetchedMapUrl) setMapUrl(`${STATIC_BASE}${fetchedMapUrl}`);
-  });
 
   React.useEffect(() => {
     if (!socket) return;
@@ -79,9 +87,6 @@ const MapGrid = ({
     socket.on(SOCKET_EVENTS.PLAYER_MEASURING, handlePlayerMeasuring);
     return () => socket.off(SOCKET_EVENTS.PLAYER_MEASURING, handlePlayerMeasuring);
   }, [socket]);
-
-  // const mapWidth = GRID_SIZE * MAP_TILE_WIDTH;
-  // const mapHeight = GRID_SIZE * MAP_TILE_HEIGHT;
 
   return (
     <div className="map-grid mt-4 space-y-4">

@@ -141,14 +141,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/table/:campaignId"
-          element={
-            <ProtectedRoute>
-              <Tabletop />
-            </ProtectedRoute>
-          }
-        />
+          <Route path="/table/:campaignId" element={<Tabletop />} />
       </Routes>
     </SocketProvider>
   );
