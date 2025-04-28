@@ -13,6 +13,7 @@ const Tabletop = () => {
   const { campaignId } = useParams();
   const { user } = useContext(UserContext);
   const { socket, joinCampaign } = useSocket();
+  const [measureTarget, setMeasureTarget] = useState(null);
 
   const [campaign, setCampaign] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -107,13 +108,15 @@ const Tabletop = () => {
       <div className="flex-grow overflow-auto bg-black p-16 relative">
         {campaign && (
           <MapGrid
-            campaign={campaign}
-            isGM={isGM}
-            selectedToken={selectedToken}
-            setSelectedToken={setSelectedToken}
-            isMeasureMode={isMeasureMode}
-            setIsMeasureMode={setIsMeasureMode}
-          />
+          campaign={campaign}
+          isGM={isGM}
+          selectedToken={selectedToken}
+          setSelectedToken={setSelectedToken}
+          isMeasureMode={isMeasureMode}
+          setIsMeasureMode={setIsMeasureMode}
+          measureTarget={measureTarget}
+          setMeasureTarget={setMeasureTarget}
+        />
         )}
         <GameTablet
           handleRoll={handleRoll}
