@@ -30,7 +30,7 @@ import CharacterDashboard from './pages/CharacterDashboard'; // User's character
 import CreateCampaign from './pages/CreateCampaign'; // Page to create new campaigns
 import CampaignList from './pages/CampaignList'; // User's campaign list page
 import Messages from './pages/Messages'; // User's inbox and messaging center
-import Tabletop from './components/Tabletop'; // Main virtual tabletop view
+import Tabletop from './components/GameBoard/Tabletop'; // Main virtual tabletop view
 import { SocketProvider } from './context/SocketContext'; // WebSocket connection provider for real-time features
 import { UserContext } from './context/UserContext'; // Context providing user authentication and loading state
 

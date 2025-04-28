@@ -1,0 +1,139 @@
+Project: ArcanaTable
+Tech Stack: Node.js (Express) backend, React.js frontend, MongoDB database.
+Goal: Virtual Tabletop (VTT) platform for playing tabletop RPGs online with character management, campaigns, messaging, maps, and real-time interactions.
+
+Backend File Structure:
+/backend
+├── /config
+│   ├── db.js                        # [SETUP] Database connection (MongoDB)
+│
+├── /controllers
+│   ├── authController.js             # [CONTROLLER] 
+│   ├── campaignController.js         # [CONTROLLER] 
+│   ├── mapController.js              # [CONTROLLER] 
+│   ├── messageController.js          # [CONTROLLER] 
+│   ├── userController.js             # [CONTROLLER] 
+│
+├── /middleware
+│   ├── authMiddleware.js             # [MIDDLEWARE] 
+│
+├── /models
+│   ├── Campaign.js                   # [MODEL] 
+│   ├── Character.js                  # [MODEL] 
+│   ├── Message.js                     # [MODEL] 
+│   ├── User.js                        # [MODEL] 
+│
+├── /routes
+│   ├── auth.js                       # [ROUTE] 
+│   ├── campaign.js                   # [ROUTE] 
+│   ├── character.js                  # [ROUTE] 
+│   ├── map.js                        # [ROUTE] 
+│   ├── message.js                     # [ROUTE] 
+│   ├── user.js                        # [ROUTE] 
+│
+├── /uploads
+│   ├── /avatars                      # [UPLOADS] Profile picture storage
+│   ├── /campaigns                    # [UPLOADS] Campaign-related media
+│   ├── /maps                         # [UPLOADS] Map files and images
+│
+├── .env                               # Environment variables
+├── index.js                           # Main backend entry point
+├── package.json                       # Backend dependencies
+├── package-lock.json                  # Dependency lockfile
+
+Frontend File Structure:
+/frontend
+├── /public
+│   ├── (static files, favicon, manifest, etc.)
+│
+├── /src
+│   ├── /components
+│   │   ├── /CharacterSheet
+│   │   │   ├── /StatBlocks
+│   │   │   │   ├── AbilityScores.jsx              # [STATBLOCK]
+│   │   │   │   ├── AdditionalFeatures.jsx          # [STATBLOCK]
+│   │   │   │   ├── AlliesAndOrganizations.jsx      # [STATBLOCK]
+│   │   │   │   ├── AttackSection.jsx               # [STATBLOCK]
+│   │   │   │   ├── CharacterAppearance.jsx         # [STATBLOCK]
+│   │   │   │   ├── CharacterBackstory.jsx          # [STATBLOCK]
+│   │   │   │   ├── CharacterHeader.jsx             # [STATBLOCK]
+│   │   │   │   ├── CharacterPortrait.jsx           # [STATBLOCK]
+│   │   │   │   ├── CombatStats.jsx                 # [STATBLOCK]
+│   │   │   │   ├── DeathSaves.jsx                  # [STATBLOCK]
+│   │   │   │   ├── EquipmentSection.jsx            # [STATBLOCK]
+│   │   │   │   ├── FeaturesAndTraits.jsx           # [STATBLOCK]
+│   │   │   │   ├── HitPointsBlock.jsx              # [STATBLOCK]
+│   │   │   │   ├── PersonalityTraits.jsx           # [STATBLOCK]
+│   │   │   │   ├── PhysicalAttributes.jsx          # [STATBLOCK]
+│   │   │   │   ├── ProficiencyInspirationBlock.jsx # [STATBLOCK]
+│   │   │   │   ├── SavingThrowsOnlyBlock.jsx       # [STATBLOCK]
+│   │   │   │   ├── SkillsBlock.jsx                 # [STATBLOCK]
+│   │   │   │   ├── SpellcastingInfoBlock.jsx       # [STATBLOCK]
+│   │   │   │   ├── SpellcastingSection.jsx         # [STATBLOCK]
+│   │   │   │   ├── SpellLevelBlock.jsx             # [STATBLOCK]
+│   │   │   │   ├── TreasureBlock.jsx               # [STATBLOCK]
+│   │   │   │   ├── WisdomAndProficiencies.jsx      # [STATBLOCK]
+│   │   │   ├── CharacterSheetForm.jsx              # [CHARACTER SHEET]
+│   │   │   ├── CharacterSheetWindow.jsx            # [CHARACTER SHEET]
+│   │   ├── CampaignCard.jsx                        # [CAMPAIGN COMPONENT]
+│   │   ├── DiceRoller.jsx                          # [UTILITY COMPONENT]
+│   │   ├── MapGrid.jsx                             # [MAP COMPONENT]
+│   │   ├── MessageForm.jsx                         # [MESSAGING]
+│   │   ├── Navbar.jsx                              # [NAVIGATION]
+│   │   ├── OnboardingRedirect.jsx                  # [ONBOARDING]
+│   │   ├── ProtectedRoute.jsx                      # [ROUTING]
+│   │   ├── Tabletop.jsx                             # [MAP/TABLE COMPONENT]
+│   │   ├── UserInfoCard.jsx                        # [USER INFO]
+│
+│   ├── /constants
+│   │   ├── SOCKET_EVENTS.js                        # [SOCKET EVENTS CONSTANTS]
+│
+│   ├── /context
+│   │   ├── SocketContext.js                        # [SOCKET.IO CONTEXT]
+│   │   ├── UserContext.js                          # [USER AUTH CONTEXT]
+│
+│   ├── /hooks
+│   │   ├── useCampaignData.js                      # [CAMPAIGN HOOK]
+│   │   ├── useCharacters.js                        # [CHARACTER HOOK]
+│   │   ├── useChatSocket.js                        # [CHAT SOCKET HOOK]
+│   │   ├── useFetchMap.js                          # [MAP FETCHING HOOK]
+│   │   ├── useMapSocket.js                         # [MAP SOCKET HOOK]
+│   │   ├── useMessages.js                          # [MESSAGE FETCHING HOOK]
+│   │   ├── useMyCampaigns.js                       # [MY CAMPAIGNS HOOK]
+│   │   ├── useUnreadMessages.js                    # [UNREAD MESSAGES HOOK]
+│
+│   ├── /pages
+│   │   ├── CampaignList.jsx                        # [CAMPAIGN PAGE]
+│   │   ├── CharacterDashboard.jsx                  # [CHARACTER PAGE]
+│   │   ├── CreateCampaign.jsx                      # [CREATE CAMPAIGN]
+│   │   ├── Dashboard.jsx                           # [USER DASHBOARD]
+│   │   ├── Homepage.jsx                            # [LANDING PAGE]
+│   │   ├── Landing.jsx                             # [LANDING/LOGIN REDIRECT]
+│   │   ├── Messages.jsx                            # [MESSAGE CENTER]
+│   │   ├── Signup.jsx                              # [SIGNUP PAGE]
+│   │   ├── UserWelcome.jsx                         # [FIRST TIME LOGIN WELCOME]
+│   │   ├── WelcomeSetup.jsx                        # [ACCOUNT ONBOARDING]
+│
+│   ├── /utils
+│   │   ├── api.js                                  # [API HELPER WRAPPER]
+│   │   ├── characterSubmitHandler.js               # [FORM HANDLER]
+│   │   ├── decodeToken.js                          # [JWT DECODE HELPER]
+│
+│   ├── App.css                                     # Main styling
+│   ├── App.js                                      # Main app shell
+│   ├── App.test.js                                 # (Placeholder tests)
+│   ├── index.css                                   # Global styles
+│   ├── index.js                                    # React entry point
+│   ├── logo.svg                                    # Logo asset
+│   ├── reportWebVitals.js                          # Performance reporting
+│   ├── setupTests.js                               # Test setup
+│
+├── .env                                            # Environment variables
+├── package.json                                    # Frontend dependencies
+├── postcss.config.js                               # PostCSS config
+├── tailwind.config.js                              # TailwindCSS config
+├── README.md                                       # Project documentation
+
+
+
+

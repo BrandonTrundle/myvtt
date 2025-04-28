@@ -63,7 +63,7 @@ app.use(express.urlencoded({ extended: true, limit: '5mb' }));
  */
 app.use(cors({
   origin: function (origin, callback) {
-    console.log('🧪 CORS origin check:', origin);
+    // console.log('🧪 CORS origin check:', origin);
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -206,6 +206,30 @@ io.on('connection', (socket) => {
     console.log(`📡 Server received MAP_UPDATED for ${campaignId}:`, activeMap);
 
     io.to(campaignId).emit('map_updated', { activeMap });
+  });
+
+  socket.on('token_spawned', (data) => {
+    const { campaignId, ...tokenData } = data;
+    if (!campaignId) {
+      console.warn('⚠️ Invalid TOKEN_SPAWNED payload:', data);
+      return;
+    }
+  
+    console.log(`🎯 Server received TOKEN_SPAWNED for ${campaignId}:`, tokenData);
+  
+    io.to(campaignId).emit('token_spawned', { ...tokenData });
+  });
+
+  socket.on('token_moved', (data) => {
+    const { campaignId, ...tokenData } = data;
+    if (!campaignId) {
+      console.warn('⚠️ Invalid TOKEN_MOVED payload:', data);
+      return;
+    }
+  
+    console.log(`🎯 Server received TOKEN_MOVED for ${campaignId}:`, tokenData);
+  
+    io.to(campaignId).emit('token_moved', { ...tokenData });
   });
 
   socket.on('disconnect', () => {

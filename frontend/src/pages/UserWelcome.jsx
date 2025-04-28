@@ -17,7 +17,7 @@
 
 import React, { useEffect, useState, useContext } from 'react'; // React library and hooks for lifecycle, local state, and context access
 import { useNavigate } from 'react-router-dom'; // Hook for programmatic route navigation
-import UserInfoCard from '../components/UserInfoCard'; // Component displaying compact user information card
+import UserInfoCard from '../components/UserComponents/UserInfoCard';// Component displaying compact user information card
 import { apiFetch } from '../utils/api'; // Utility for sending authenticated server requests
 import { UserContext } from '../context/UserContext'; // Context providing user authentication and profile data
 
